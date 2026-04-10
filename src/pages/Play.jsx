@@ -14,6 +14,9 @@ const TABS = [
 ];
 
 export default function Play() {
+  return (<div className="min-h-screen bg-lime-400 flex items-center justify-center text-4xl text-black font-bold">TESTING PARTIDOS</div>);
+  
+  /* LÓGICA COMENTADA PARA AISLAR EL ERROR CRÍTICO
   const { currentUser, rooms, addRoom, joinRoom } = useAuth();
 
   const [activeTab, setActiveTab] = useState('my_matches');
@@ -91,8 +94,8 @@ export default function Play() {
         >
           <ArrowLeft size={16} className="mr-2" /> Volver
         </button>
-        {/* Lógica de pista y drag & drop aislada temporalmente */}
-        {/* <PadelCourtUI match={currentRoomState} /> */}
+        {/ * Lógica de pista y drag & drop aislada temporalmente * /}
+        {/ * <PadelCourtUI match={currentRoomState} /> * /}
         <div className="p-4 border border-brand bg-brand/10 text-brand rounded-xl text-center">
           Pista desactivada temporalmente para aislar el error.
         </div>
@@ -104,7 +107,7 @@ export default function Play() {
     <div className="p-4 pb-28 min-h-screen">
       <h2 className="text-2xl font-bold text-white mb-5">Partidos</h2>
 
-      {/* NAV TABS */}
+      {/ * NAV TABS * /}
       <div className="flex bg-dark-card rounded-xl p-1 mb-6 border border-dark-border shadow-sm gap-0.5">
         {TABS.map(tab => (
           <button
@@ -121,7 +124,7 @@ export default function Play() {
         ))}
       </div>
 
-      {/* ── MIS PARTIDOS ── */}
+      {/ * ── MIS PARTIDOS ── * /}
       {activeTab === 'my_matches' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
           {!myMatches || myMatches.length === 0 ? (
@@ -138,7 +141,7 @@ export default function Play() {
         </motion.div>
       )}
 
-      {/* ── PARTIDOS DISPONIBLES (PÚBLICOS) ── */}
+      {/ * ── PARTIDOS DISPONIBLES (PÚBLICOS) ── * /}
       {activeTab === 'public' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
           {!publicRooms || publicRooms.length === 0 ? (
@@ -155,7 +158,7 @@ export default function Play() {
         </motion.div>
       )}
 
-      {/* ── UNIRSE POR CÓDIGO ── */}
+      {/ * ── UNIRSE POR CÓDIGO ── * /}
       {activeTab === 'join' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-dark-card border border-dark-border p-6 rounded-2xl shadow-lg text-center py-12">
           <ShieldAlert size={52} className="text-brand mx-auto mb-4 opacity-80" />
@@ -187,7 +190,7 @@ export default function Play() {
         </motion.div>
       )}
 
-      {/* ── CREAR PARTIDO ── */}
+      {/ * ── CREAR PARTIDO ── * /}
       {activeTab === 'create' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-dark-card border border-dark-border p-5 rounded-2xl shadow-lg">
           <form onSubmit={handleCreateRoom} className="space-y-5">
@@ -233,7 +236,7 @@ export default function Play() {
               </div>
             </div>
 
-            {/* PRIVACIDAD SELECTOR */}
+            {/ * PRIVACIDAD SELECTOR * /}
             <div className="grid grid-cols-2 gap-3">
               {[
                 { value: false, icon: Globe, label: 'Pública', desc: 'Visible en Disponibles' },
@@ -264,6 +267,7 @@ export default function Play() {
       )}
     </div>
   );
+  */
 }
 
 // ── SUBCOMPONENTES ──
