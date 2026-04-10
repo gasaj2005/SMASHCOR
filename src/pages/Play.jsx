@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Clock, ShieldAlert, ArrowLeft, Plus, Globe, Lock, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import PadelCourtUI from '../components/PadelCourtUI';
 
@@ -91,7 +91,11 @@ export default function Play() {
         >
           <ArrowLeft size={16} className="mr-2" /> Volver
         </button>
-        <PadelCourtUI match={currentRoomState} />
+        {/* Lógica de pista y drag & drop aislada temporalmente */}
+        {/* <PadelCourtUI match={currentRoomState} /> */}
+        <div className="p-4 border border-brand bg-brand/10 text-brand rounded-xl text-center">
+          Pista desactivada temporalmente para aislar el error.
+        </div>
       </div>
     );
   }
@@ -282,7 +286,7 @@ function MatchCard({ match, onClick }) {
       <p className="text-xs text-brand font-mono font-bold tracking-widest mb-3 bg-brand/10 inline-block px-2 py-0.5 rounded mt-0.5">{match?.roomCode || 'PAD-????'}</p>
       <div className="flex flex-col gap-1.5 text-xs text-slate-400">
         <span className="flex items-center gap-2"><MapPin size={12} className="text-slate-500" /> {match?.location || 'Sin ubicación'}</span>
-        {match?.datetime && (
+        {match?.datetime && isValid(new Date(match.datetime)) && (
           <span className="flex items-center gap-2"><Clock size={12} className="text-slate-500" /> {format(new Date(match.datetime), "dd MMM · HH:mm", { locale: es })} hs</span>
         )}
       </div>
@@ -322,7 +326,7 @@ function PublicMatchCard({ match, onJoin }) {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs text-slate-400">
-          {match?.datetime && (
+          {match?.datetime && isValid(new Date(match.datetime)) && (
             <><Clock size={11} className="text-slate-500" /> {format(new Date(match.datetime), "dd MMM · HH:mm", { locale: es })} hs</>
           )}
         </div>
