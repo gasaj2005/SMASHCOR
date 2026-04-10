@@ -25,8 +25,12 @@ export default function BottomNav() {
               }`
             }
           >
-            <item.icon size={22} strokeWidth={isActive ? 3 : 2} className="mb-1" />
-            <span className="text-[9px] font-bold tracking-tight text-center leading-tight truncate w-full">{item.name}</span>
+            {({ isActive }) => (
+              <>
+                <item.icon size={22} strokeWidth={isActive ? 3 : 2} className="mb-1" />
+                <span className="text-[9px] font-bold tracking-tight text-center leading-tight truncate w-full">{item.name}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

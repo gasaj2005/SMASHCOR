@@ -10,17 +10,21 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('smashcor_currentUser');
-    const storedUsers = localStorage.getItem('smashcor_users');
+    try {
+      const storedUser = localStorage.getItem('smashcor_currentUser');
+      const storedUsers = localStorage.getItem('smashcor_users');
 
-    if (!storedUsers) {
-      // Attach a default password to the mock data for testing if needed
-      const initialMockUser = { ...mockUser, password: '123' };
-      localStorage.setItem('smashcor_users', JSON.stringify([initialMockUser]));
-    }
+      if (!storedUsers) {
+        // Attach a default password to the mock data for testing if needed
+        const initialMockUser = { ...mockUser, password: '123' };
+        localStorage.setItem('smashcor_users', JSON.stringify([initialMockUser]));
+      }
 
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+      if (storedUser && storedUser !== 'undefined') {
+        setCurrentUser(JSON.parse(storedUser));
+      }
+    } catch (e) {
+      console.error('Failed to parse auth data from localStorage:', e);
     }
     setLoading(false);
   }, []);
