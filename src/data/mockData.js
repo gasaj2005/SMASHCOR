@@ -96,7 +96,23 @@ export const friendsList = [
 ];
 
 export const communitiesList = [
-  { id: 'c1', name: 'Nómadas del Pádel', icon: '🌍', isPrivate: true, membersCount: 15, maxMembers: 30, leaderId: 'u2' },
-  { id: 'c2', name: 'Torneos de Fin de Semana', icon: '🏆', isPrivate: false, membersCount: 48, maxMembers: 50, leaderId: 'u4' },
-  { id: 'c3', name: 'Solo 4ª División Córdoba', icon: '🎾', isPrivate: false, membersCount: 22, maxMembers: 50, leaderId: 'u1' }
+  { 
+    id: 'c1', name: 'Nómadas del Pádel', icon: '🌍', isPrivate: true, 
+    membersCount: 15, maxMembers: 30, leaderId: 'u2', membersIds: ['u2', 'u1'],
+    messages: [
+      { id: 'm1', senderId: 'u2', text: '¡Bienvenidos a la nueva comunidad privada!', timestamp: '2026-04-10T10:00:00Z' }
+    ]
+  },
+  { 
+    id: 'c2', name: 'Torneos de Fin de Semana', icon: '🏆', isPrivate: false, 
+    membersCount: 48, maxMembers: 50, leaderId: 'u4', membersIds: ['u4'],
+    messages: []
+  },
+  { 
+    id: 'c3', name: 'Solo 4ª División Córdoba', icon: '🎾', isPrivate: false, 
+    membersCount: 22, maxMembers: 50, leaderId: 'u5', membersIds: ['u5'],
+    messages: []
+  }
 ];
+
+export const globalUsers = [...leaderboardData];
