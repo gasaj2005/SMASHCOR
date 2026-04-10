@@ -265,32 +265,33 @@ export default function Play() {
 // ── SUBCOMPONENTES ──
 
 function MatchCard({ match, onClick }) {
+  const players = Array.isArray(match?.players) ? match.players : [];
   return (
     <div
       onClick={onClick}
       className="bg-dark-card border border-dark-border p-5 rounded-2xl cursor-pointer hover:border-brand/50 transition shadow-lg relative group overflow-hidden"
     >
       <div className="absolute top-0 right-0 bg-brand text-dark-bg font-bold px-4 py-1.5 text-xs rounded-bl-xl z-10">
-        {match.players.length}/4
+        {players.length}/4
       </div>
-      {match.isPrivate
+      {match?.isPrivate
         ? <Lock size={12} className="text-slate-500 mb-1" />
         : <Globe size={12} className="text-brand/60 mb-1" />
       }
-      <h3 className="text-lg font-bold text-white group-hover:text-brand transition-colors">{match.name}</h3>
-      <p className="text-xs text-brand font-mono font-bold tracking-widest mb-3 bg-brand/10 inline-block px-2 py-0.5 rounded mt-0.5">{match.roomCode}</p>
+      <h3 className="text-lg font-bold text-white group-hover:text-brand transition-colors">{match?.name || 'Partido'}</h3>
+      <p className="text-xs text-brand font-mono font-bold tracking-widest mb-3 bg-brand/10 inline-block px-2 py-0.5 rounded mt-0.5">{match?.roomCode || 'PAD-????'}</p>
       <div className="flex flex-col gap-1.5 text-xs text-slate-400">
-        <span className="flex items-center gap-2"><MapPin size={12} className="text-slate-500" /> {match.location}</span>
-        {match.datetime && (
+        <span className="flex items-center gap-2"><MapPin size={12} className="text-slate-500" /> {match?.location || 'Sin ubicación'}</span>
+        {match?.datetime && (
           <span className="flex items-center gap-2"><Clock size={12} className="text-slate-500" /> {format(new Date(match.datetime), "dd MMM · HH:mm", { locale: es })} hs</span>
         )}
       </div>
       <div className="mt-4 pt-3 border-t border-dark-border flex items-center justify-between">
         <div className="flex -space-x-2">
-          {match.players.map((p, i) => (
-            <img key={i} src={p.avatar} className="w-7 h-7 rounded-full border-2 border-dark-card" alt="Player" />
+          {players.map((p, i) => (
+            <img key={p?.id || i} src={p?.avatar || 'https://via.placeholder.com/150'} className="w-7 h-7 rounded-full border-2 border-dark-card" alt="Player" />
           ))}
-          {Array.from({ length: 4 - match.players.length }).map((_, i) => (
+          {Array.from({ length: Math.max(0, 4 - players.length) }).map((_, i) => (
             <div key={`e-${i}`} className="w-7 h-7 rounded-full border-2 border-dark-card bg-slate-800 flex items-center justify-center text-slate-500">
               <Plus size={10} />
             </div>
@@ -303,15 +304,16 @@ function MatchCard({ match, onClick }) {
 }
 
 function PublicMatchCard({ match, onJoin }) {
-  const free = 4 - match.players.length;
+  const playersCount = Array.isArray(match?.players) ? match.players.length : 0;
+  const free = Math.max(0, 4 - playersCount);
   return (
     <div className="bg-dark-card border border-dark-border p-5 rounded-2xl shadow-lg overflow-hidden relative">
-      <div className={`absolute top-0 left-0 h-1 ${free === 1 ? 'bg-orange-400' : 'bg-brand'}`} style={{ width: `${(match.players.length / 4) * 100}%` }} />
+      <div className={`absolute top-0 left-0 h-1 ${free === 1 ? 'bg-orange-400' : 'bg-brand'}`} style={{ width: `${(playersCount / 4) * 100}%` }} />
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="text-lg font-bold text-white">{match.name}</h3>
+          <h3 className="text-lg font-bold text-white">{match?.name || 'Partido disponible'}</h3>
           <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
-            <MapPin size={12} className="text-slate-500" /> {match.location}
+            <MapPin size={12} className="text-slate-500" /> {match?.location || 'Sin ubicación'}
           </div>
         </div>
         <div className={`shrink-0 ml-2 text-center px-3 py-1.5 rounded-xl font-black text-sm ${free === 1 ? 'bg-orange-400/20 text-orange-400' : 'bg-brand/20 text-brand'}`}>
@@ -320,7 +322,7 @@ function PublicMatchCard({ match, onJoin }) {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs text-slate-400">
-          {match.datetime && (
+          {match?.datetime && (
             <><Clock size={11} className="text-slate-500" /> {format(new Date(match.datetime), "dd MMM · HH:mm", { locale: es })} hs</>
           )}
         </div>

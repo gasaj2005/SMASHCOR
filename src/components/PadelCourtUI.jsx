@@ -35,9 +35,9 @@ export default function PadelCourtUI({ match }) {
 
   // Calcula qué slot queda más cerca del punto de suelta (coordenadas % relativas al court)
   const resolveDropZone = (clientX, clientY) => {
-    if (!courtRef.current) return null;
+    if (!courtRef.current || clientX == null || clientY == null) return null;
     const rect = courtRef.current.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return null;
+    if (!rect || rect.width === 0 || rect.height === 0) return null;
     const px = ((clientX - rect.left) / rect.width) * 100;
     const py = ((clientY - rect.top) / rect.height) * 100;
 
@@ -192,8 +192,8 @@ export default function PadelCourtUI({ match }) {
                   className="relative cursor-grab active:cursor-grabbing touch-none focus:outline-none"
                 >
                   <img
-                    src={player.avatar}
-                    alt={player.name ?? 'Yo'}
+                    src={player?.avatar || 'https://via.placeholder.com/150'}
+                    alt={player?.name ?? 'Yo'}
                     className="w-12 h-12 rounded-full border-[3px] border-brand shadow-[0_0_12px_rgba(163,230,53,0.6)] object-cover bg-slate-900 pointer-events-none"
                     draggable={false}
                   />
@@ -210,12 +210,12 @@ export default function PadelCourtUI({ match }) {
                   className="relative focus:outline-none"
                 >
                   <img
-                    src={player.avatar}
-                    alt={player.name ?? 'Jugador'}
+                    src={player?.avatar || 'https://via.placeholder.com/150'}
+                    alt={player?.name ?? 'Jugador'}
                     className="w-12 h-12 rounded-full border-[3px] border-white shadow-[0_5px_15px_rgba(0,0,0,0.5)] object-cover bg-slate-900"
                   />
                   <div className="absolute -bottom-2 -right-2 bg-slate-800 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow border border-slate-600">
-                    {player.division ?? '?'}ª
+                    {player?.division ?? '?'}ª
                   </div>
                 </motion.button>
               )}
@@ -249,15 +249,15 @@ export default function PadelCourtUI({ match }) {
               </button>
               <div className="pt-10 pb-4 px-6 flex flex-col items-center relative">
                 <img
-                  src={selectedPlayer.avatar}
+                  src={selectedPlayer?.avatar || 'https://via.placeholder.com/150'}
                   className="w-24 h-24 rounded-full border-4 border-dark-card shadow-xl object-cover mb-3 bg-slate-900"
-                  alt={selectedPlayer.name}
+                  alt={selectedPlayer?.name || 'Usuario'}
                 />
-                <h3 className="text-2xl font-black text-white mb-0.5 tracking-tight text-center">{selectedPlayer.name ?? '—'}</h3>
-                <p className="text-slate-500 text-sm mb-5 text-center">@{selectedPlayer.username ?? '—'}</p>
+                <h3 className="text-2xl font-black text-white mb-0.5 tracking-tight text-center">{selectedPlayer?.name ?? '—'}</h3>
+                <p className="text-slate-500 text-sm mb-5 text-center">@{selectedPlayer?.username ?? '—'}</p>
                 <div className="flex gap-3 w-full">
-                  <StatCard icon={Trophy} label="Nivel" value={`${selectedPlayer.division ?? '?'}ª ${selectedPlayer.subdivision ?? ''}`} />
-                  <StatCard icon={User}   label="Perfil" value={`${selectedPlayer.age ?? '?'}a · ${selectedPlayer.gender === 'M' ? 'Hombre' : 'Mujer'}`} />
+                  <StatCard icon={Trophy} label="Nivel" value={`${selectedPlayer?.division ?? '?'}ª ${selectedPlayer?.subdivision ?? ''}`} />
+                  <StatCard icon={User}   label="Perfil" value={`${selectedPlayer?.age ?? '?'}a · ${selectedPlayer?.gender === 'M' ? 'Hombre' : 'Mujer'}`} />
                 </div>
               </div>
               <div className="px-6 pb-8 pt-2">
