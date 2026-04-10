@@ -58,7 +58,19 @@ export const SocialProvider = ({ children }) => {
 
   // -- AMISTAD --
   const sendFriendRequest = (userId) => {
-    // Al actuar simularíamos que el otro usuario lo recibe, pero guardamos un feedback visual
+    if (!currentUser) return { success: false };
+    
+    // Leer bandeja del objetivo
+    const targetKey = `smashcor_requests_${userId}`;
+    const existingRaw = localStorage.getItem(targetKey);
+    let targetRequests = existingRaw ? JSON.parse(existingRaw) : [];
+    
+    // Añadir nuestro ID si no está ya
+    if (!targetRequests.includes(currentUser.id)) {
+      targetRequests.push(currentUser.id);
+      localStorage.setItem(targetKey, JSON.stringify(targetRequests));
+    }
+    
     return { success: true, message: 'Solicitud enviada' };
   };
 

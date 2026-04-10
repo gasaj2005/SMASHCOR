@@ -117,8 +117,9 @@ export default function Social() {
   // ── RENDER DE CHAT AISLADO ──
   if (activeChat && currentChatComm) {
     return (
-      <div className="flex flex-col h-[100dvh] max-w-md mx-auto relative bg-gray-900 absolute inset-0 z-50 w-full">
-        {/* CAJA 1: El Header */}
+      <div className="fixed inset-0 z-50 flex justify-center bg-black/95">
+        <div className="flex flex-col h-[100dvh] w-full max-w-md bg-gray-900 shadow-2xl relative overflow-hidden">
+          {/* CAJA 1: El Header */}
         <div className="flex-none flex items-center p-4 bg-gray-800 border-b border-gray-700 z-50">
           <button onClick={(e) => { e.stopPropagation(); setActiveChat(null); }} className="text-white mr-4">
             <ArrowLeft size={24} />
@@ -184,16 +185,23 @@ export default function Social() {
         </div>
 
         {/* Modal Info de Comunidad */}
-        {showCommInfo && (
-          <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4">
-            <div className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative flex flex-col items-center text-center">
-              {currentChatComm.iconBase64 ? (
-                <img src={currentChatComm.iconBase64} alt="icon" className="w-32 h-32 rounded-full object-cover mb-4 shadow-lg border-2 border-slate-700 bg-gray-600" />
-              ) : (
-                <div className="w-32 h-32 rounded-full bg-gray-600 flex items-center justify-center text-brand text-5xl mb-4">
-                  {currentChatComm.icon || currentChatComm.name.charAt(0)}
-                </div>
-              )}
+        <AnimatePresence>
+          {showCommInfo && (
+            <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative flex flex-col items-center text-center"
+              >
+                {currentChatComm.iconBase64 ? (
+                  <img src={currentChatComm.iconBase64} alt="icon" className="w-32 h-32 rounded-full object-cover mb-4 shadow-lg border-2 border-slate-700 bg-gray-600" />
+                ) : (
+                  <div className="w-32 h-32 rounded-full bg-gray-600 flex items-center justify-center text-brand text-5xl mb-4">
+                    {currentChatComm.icon || currentChatComm.name.charAt(0)}
+                  </div>
+                )}
               
               <h2 className="text-xl font-bold text-white mb-4">{currentChatComm.name}</h2>
               
@@ -218,9 +226,11 @@ export default function Social() {
               >
                 Cerrar
               </button>
+              </motion.div>
             </div>
-          </div>
-        )}
+          )}
+        </AnimatePresence>
+      </div>
       </div>
     );
   }
@@ -304,7 +314,13 @@ export default function Social() {
                         <p className="text-xs text-slate-400 truncate">@{u.username}</p>
                       </div>
                     </div>
-                    <button onClick={() => sendFriendRequest(u.id)} className="flex items-center text-[11px] font-bold bg-brand/10 text-brand px-3 py-1.5 rounded-lg border border-brand/20 whitespace-nowrap">
+                    <button onClick={() => {
+                        const res = sendFriendRequest(u.id);
+                        if(res.success) {
+                          alert(res.message);
+                          setSearchQuery('');
+                        }
+                      }} className="flex items-center text-[11px] font-bold bg-brand/10 text-brand px-3 py-1.5 rounded-lg border border-brand/20 whitespace-nowrap">
                       <UserPlus size={14} className="mr-1.5" /> Añadir
                     </button>
                   </div>
