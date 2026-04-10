@@ -14,9 +14,6 @@ const TABS = [
 ];
 
 export default function Play() {
-  return (<div className="min-h-screen bg-lime-400 flex items-center justify-center text-4xl text-black font-bold">TESTING PARTIDOS</div>);
-  
-  /* LÓGICA COMENTADA PARA AISLAR EL ERROR CRÍTICO
   const { currentUser, rooms, addRoom, joinRoom } = useAuth();
 
   const [activeTab, setActiveTab] = useState('my_matches');
@@ -94,11 +91,7 @@ export default function Play() {
         >
           <ArrowLeft size={16} className="mr-2" /> Volver
         </button>
-        {/ * Lógica de pista y drag & drop aislada temporalmente * /}
-        {/ * <PadelCourtUI match={currentRoomState} /> * /}
-        <div className="p-4 border border-brand bg-brand/10 text-brand rounded-xl text-center">
-          Pista desactivada temporalmente para aislar el error.
-        </div>
+        <PadelCourtUI match={currentRoomState} />
       </div>
     );
   }
@@ -267,7 +260,6 @@ export default function Play() {
       )}
     </div>
   );
-  */
 }
 
 // ── SUBCOMPONENTES ──
