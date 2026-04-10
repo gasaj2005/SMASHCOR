@@ -94,12 +94,12 @@ export default function Play() {
             <ArrowLeft size={16} className="mr-2" /> Volver
           </button>
           
-          {currentUser?.id === currentRoomState.creatorId ? (
+          { (currentUser?.id === currentRoomState.creatorId || currentRoomState.players?.[0]?.id === currentUser?.id) ? (
             <button
               onClick={() => setConfirmAction({ type: 'delete', roomId: currentRoomState.id })}
               className="flex items-center text-red-500 hover:text-red-400 bg-red-500/10 px-3 py-2 rounded-xl text-sm font-bold border border-red-500/20 shadow-sm transition"
             >
-              <Trash2 size={16} className="mr-1.5" /> Eliminar
+              <Trash2 size={16} className="mr-1.5" /> Eliminar Partido
             </button>
           ) : (
             <button
