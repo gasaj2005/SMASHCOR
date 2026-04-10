@@ -125,6 +125,7 @@ export const SocialProvider = ({ children }) => {
     const msg = {
       id: 'm' + Date.now(),
       senderId: currentUser.id,
+      senderName: currentUser.name,
       text: text.trim(),
       timestamp: new Date().toISOString()
     };

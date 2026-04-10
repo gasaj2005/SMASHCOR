@@ -32,6 +32,7 @@ export default function Social() {
   // Chat state
   const [activeChat, setActiveChat] = useState(null);
   const [chatMessage, setChatMessage] = useState('');
+  const [showCommInfo, setShowCommInfo] = useState(false);
   const chatScrollRef = useRef(null);
 
   // Form state
@@ -50,7 +51,7 @@ export default function Social() {
   const searchResults = globalUsers.filter(u => 
     u.id !== currentUser?.id && 
     !friendsIds.includes(u.id) &&
-    u.name.toLowerCase().includes(searchQuery.toLowerCase())
+    u.username && u.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // -- Helpers Comunidades --
@@ -113,10 +114,16 @@ export default function Social() {
   // ── RENDER DE CHAT AISLADO ──
   if (activeChat && currentChatComm) {
     return (
-      <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex flex-col h-screen pb-20 bg-dark-bg">
+      <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="fixed inset-0 z-40 bg-dark-bg flex flex-col pb-[72px]">
         {/* Header Chat */}
-        <div className="bg-dark-card border-b border-dark-border p-4 flex items-center shadow-lg sticky top-0 z-10 pt-safe">
-          <button onClick={() => setActiveChat(null)} className="mr-3 text-slate-400 hover:text-white p-2 bg-dark-bg rounded-xl">
+        <div 
+          className="bg-dark-card border-b border-dark-border p-4 flex items-center shadow-lg pt-safe select-none cursor-pointer hover:bg-dark-card/80 transition"
+          onClick={() => setShowCommInfo(true)}
+        >
+          <button 
+            onClick={(e) => { e.stopPropagation(); setActiveChat(null); }} 
+            className="mr-3 text-slate-400 hover:text-white p-2 bg-dark-bg rounded-xl transition"
+          >
             <ArrowLeft size={20} />
           </button>
           {currentChatComm.iconBase64 ? (
@@ -133,19 +140,22 @@ export default function Social() {
         </div>
 
         {/* Muro */}
-        <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={chatScrollRef}>
           {!currentChatComm.messages || currentChatComm.messages.length === 0 ? (
             <div className="text-center text-slate-500 py-10">No hay mensajes. ¡Rompe el hielo!</div>
           ) : (
             currentChatComm.messages.map(msg => {
               const isMe = msg.senderId === currentUser?.id;
               const sender = globalUsers.find(u => u.id === msg.senderId) || currentUser;
+              // Usar el nombre guardado en JSON si existe para persistencia universal, o calcular en caliente
+              const displayName = msg.senderName || sender?.name || msg.senderId;
+              
               return (
                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} w-full`}>
                   <div className={`flex max-w-[80%] ${isMe ? 'flex-row-reverse' : 'flex-row'} items-end gap-2`}>
-                    {!isMe && <img src={sender?.avatar} alt="avatar" className="w-6 h-6 rounded-full object-cover border border-dark-border mb-1" />}
+                    {!isMe && <img src={sender?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.senderId}&backgroundColor=93C572`} alt="avatar" className="w-6 h-6 rounded-full object-cover border border-dark-border mb-1 hidden sm:block" />}
                     <div className={`p-3 rounded-2xl ${isMe ? 'bg-brand text-dark-bg rounded-br-sm shadow-[0_4px_15px_rgba(147,197,114,0.3)]' : 'bg-dark-card text-white border border-dark-border rounded-bl-sm shadow-md'}`}>
-                      {!isMe && <p className="text-[10px] font-black opacity-50 mb-1">{sender?.name}</p>}
+                      {!isMe && <p className="text-[10px] font-black opacity-50 mb-1">{displayName}</p>}
                       <p className="text-sm font-medium">{msg.text}</p>
                       <p className={`text-[9px] text-right mt-1 opacity-70 ${isMe ? 'text-dark-card' : 'text-slate-400'}`}>
                         {format(new Date(msg.timestamp), 'HH:mm')}
@@ -159,7 +169,7 @@ export default function Social() {
         </div>
 
         {/* Input */}
-        <div className="p-4 bg-dark-bg border-t border-dark-border">
+        <div className="p-4 bg-dark-bg border-t border-dark-border shrink-0">
           <form onSubmit={handleSendChat} className="flex gap-2">
             <input
               type="text"
@@ -168,11 +178,59 @@ export default function Social() {
               placeholder="Escribe un mensaje..."
               className="flex-1 bg-dark-card border border-dark-border p-3.5 rounded-full text-white text-sm focus:outline-none focus:border-brand transition-colors"
             />
-            <button type="submit" disabled={!chatMessage.trim()} className="bg-brand text-dark-bg p-3.5 rounded-full disabled:opacity-50 hover:bg-brand-hover transition-colors shadow-lg">
+            <button type="submit" disabled={!chatMessage.trim()} className="bg-brand text-dark-bg p-3.5 rounded-full disabled:opacity-50 hover:bg-brand-hover transition-colors shadow-lg flex-shrink-0">
               <Send size={20} />
             </button>
           </form>
         </div>
+
+        {/* Modal Info de Comunidad */}
+        <AnimatePresence>
+          {showCommInfo && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                onClick={() => setShowCommInfo(false)}
+              />
+              <motion.div
+                initial={{ y: 20, opacity: 0, scale: 0.95 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: 20, opacity: 0, scale: 0.95 }}
+                className="bg-dark-card border border-dark-border w-full max-w-sm rounded-[2rem] p-6 z-10 shadow-2xl relative flex flex-col items-center text-center"
+              >
+                {currentChatComm.iconBase64 ? (
+                  <img src={currentChatComm.iconBase64} alt="icon" className="w-20 h-20 rounded-full object-cover mb-4 border-2 border-brand" />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-brand/20 flex items-center justify-center text-brand text-4xl mb-4">
+                    {currentChatComm.icon || currentChatComm.name.charAt(0)}
+                  </div>
+                )}
+                <h3 className="text-xl font-black text-white mb-1">{currentChatComm.name}</h3>
+                <p className="text-xs text-brand mb-4 uppercase tracking-widest font-bold">{currentChatComm.isPrivate ? 'Privada 🔒' : 'Pública 🌍'}</p>
+                <p className="text-sm text-slate-300 mb-6 px-4">
+                  {currentChatComm.description || 'Sin descripción detallada disponible.'}
+                </p>
+                <div className="w-full bg-dark-bg rounded-xl p-4 mb-6 border border-dark-border flex justify-between">
+                  <div className="text-left">
+                    <p className="text-[10px] text-slate-500 uppercase font-bold">Líder</p>
+                    <p className="text-sm font-bold text-white truncate max-w-[120px]">{globalUsers.find(u => u.id === currentChatComm.leaderId)?.name || 'Anónimo'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-slate-500 uppercase font-bold">Miembros</p>
+                    <p className="text-sm font-bold text-white">{currentChatComm.membersCount} / {currentChatComm.maxMembers}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCommInfo(false)}
+                  className="w-full py-3.5 rounded-xl font-bold bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 transition"
+                >
+                  Cerrar
+                </button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </motion.div>
     );
   }
