@@ -117,8 +117,7 @@ export default function Social() {
   // ── RENDER DE CHAT AISLADO ──
   if (activeChat && currentChatComm) {
     return (
-      <div className="fixed inset-0 z-50 flex justify-center bg-black/95">
-        <div className="flex flex-col h-[100dvh] w-full max-w-md bg-gray-900 shadow-2xl relative overflow-hidden">
+      <div className="flex flex-col h-[100dvh] max-w-md mx-auto relative bg-gray-900 fixed inset-0 z-50 w-full font-sans">
           {/* CAJA 1: El Header */}
         <div className="flex-none flex items-center p-4 bg-gray-800 border-b border-gray-700 z-50">
           <button onClick={(e) => { e.stopPropagation(); setActiveChat(null); }} className="text-white mr-4">
@@ -230,7 +229,6 @@ export default function Social() {
             </div>
           )}
         </AnimatePresence>
-      </div>
       </div>
     );
   }
