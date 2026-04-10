@@ -8,39 +8,69 @@ export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     username: '',
+    password: '',
     dob: '',
     gender: 'M',
-    division: 4,
+    division: '4',
     subdivision: 'Baja',
+  });
+  const [avatarFile, setAvatarFile] = useState(null);
+
+  const fileToBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
   });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setAvatarFile(e.target.files[0]);
+    }
+  };
+
   const handleNext = () => setStep(2);
   const handleBack = () => setStep(1);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const calculateAge = (dob) => {
       const diff = Date.now() - new Date(dob).getTime();
       return Math.abs(new Date(diff).getUTCFullYear() - 1970);
     };
+
+    let avatarBase64 = null;
+    if (avatarFile) {
+      avatarBase64 = await fileToBase64(avatarFile);
+    } else {
+      const baseGen = formData.gender === 'F' ? 'female' : 'male';
+      avatarBase64 = `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.username}_${baseGen}&backgroundColor=93C572`;
+    }
     
-    register({
+    const result = register({
       ...formData,
       age: formData.dob ? calculateAge(formData.dob) : 25,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.username}&backgroundColor=93C572`
+      avatar: avatarBase64
     });
-    navigate('/');
+
+    if (result.success) {
+      navigate('/');
+    } else {
+      setError(result.message);
+      setStep(1);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg p-6">
+    <div className="min-h-screen bg-dark-bg p-6 pb-20">
       <div className="flex items-center mb-8">
         <button onClick={() => navigate('/login')} className="p-2 text-slate-400 hover:text-white rounded-full hover:bg-dark-card transition-colors">
           <ChevronLeft size={24} />
@@ -55,6 +85,8 @@ export default function Register() {
         transition={{ duration: 0.3 }}
       >
         <form onSubmit={handleSubmit} className="space-y-6">
+          {error && <p className="text-red-500 text-center font-medium bg-red-500/10 p-3 rounded-lg">{error}</p>}
+          
           {step === 1 ? (
             <>
               <div>
@@ -74,6 +106,14 @@ export default function Register() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">Contraseña</label>
+                <input 
+                  type="password" required name="password" value={formData.password} onChange={handleChange}
+                  className="w-full bg-dark-card border border-dark-border rounded-xl p-4 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-slate-400 mb-2">Fecha de Nacimiento</label>
                 <input 
                   type="date" required name="dob" value={formData.dob} onChange={handleChange}
@@ -86,8 +126,8 @@ export default function Register() {
                   name="gender" value={formData.gender} onChange={handleChange}
                   className="w-full bg-dark-card border border-dark-border rounded-xl p-4 text-white focus:outline-none focus:border-brand transition-all"
                 >
-                  <option value="M">Masculino</option>
-                  <option value="F">Femenino</option>
+                  <option value="M">Hombre</option>
+                  <option value="F">Mujer</option>
                   <option value="O">Otro</option>
                 </select>
               </div>
@@ -95,7 +135,7 @@ export default function Register() {
               <button 
                 type="button" onClick={handleNext}
                 className="w-full bg-brand text-dark-bg font-bold p-4 rounded-xl mt-8 hover:bg-brand-hover transition-colors"
-                disabled={!formData.name || !formData.username || !formData.dob}
+                disabled={!formData.name || !formData.username || !formData.dob || !formData.password}
               >
                 Siguiente
               </button>
@@ -124,6 +164,14 @@ export default function Register() {
                   <option value="Media">Media</option>
                   <option value="Alta">Alta</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">Foto de Perfil (Opcional)</label>
+                <input 
+                  type="file" accept="image/*" onChange={handleFileChange}
+                  className="w-full bg-dark-card border border-dark-border rounded-xl p-4 text-white focus:outline-none focus:border-brand transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-brand file:text-dark-bg file:font-semibold hover:file:bg-brand-hover"
+                />
+                <p className="text-xs text-slate-500 mt-2">Si no subes una, te asignaremos un avatar genial.</p>
               </div>
               
               <div className="pt-6 flex gap-4">

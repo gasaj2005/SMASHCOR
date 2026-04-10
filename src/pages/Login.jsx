@@ -1,15 +1,24 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Mail, Smartphone, UserPlus } from 'lucide-react';
+import { LogIn, Mail, Smartphone } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleDemoLogin = () => {
-    login('demo@smashcor.com', '123456');
-    navigate('/');
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const result = login(username, password);
+    if (result.success) {
+      navigate('/');
+    } else {
+      setError(result.message);
+    }
   };
 
   return (
@@ -27,31 +36,54 @@ export default function Login() {
         <h1 className="text-3xl font-bold text-center text-white mb-2">Bienvenido a SmashCor</h1>
         <p className="text-center text-slate-400 mb-10">La comunidad de pádel definitiva</p>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <p className="text-red-500 text-center font-medium bg-red-500/10 p-3 rounded-lg">{error}</p>}
+          
+          <div>
+            <input 
+              type="text" 
+              placeholder="Nombre de Usuario"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="w-full bg-dark-card border border-dark-border rounded-xl p-4 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all"
+            />
+          </div>
+          <div>
+            <input 
+              type="password" 
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full bg-dark-card border border-dark-border rounded-xl p-4 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all"
+            />
+          </div>
+
           <button 
-            onClick={handleDemoLogin}
-            className="w-full flex items-center justify-center space-x-3 bg-brand text-dark-bg font-semibold p-4 rounded-xl hover:bg-brand-hover transition-colors"
+            type="submit"
+            className="w-full flex items-center justify-center space-x-3 bg-brand text-dark-bg font-bold p-4 rounded-xl hover:bg-brand-hover transition-colors mt-4"
           >
             <LogIn size={20} />
-            <span>Ingresar (Cuenta Demo)</span>
+            <span>Ingresar</span>
           </button>
+        </form>
 
-          <div className="relative flex items-center py-4">
-            <div className="flex-grow border-t border-dark-border"></div>
-            <span className="flex-shrink-0 mx-4 text-slate-500 text-sm">O continúa con</span>
-            <div className="flex-grow border-t border-dark-border"></div>
-          </div>
+        <div className="relative flex items-center py-6">
+          <div className="flex-grow border-t border-dark-border"></div>
+          <span className="flex-shrink-0 mx-4 text-slate-500 text-sm">O continúa con</span>
+          <div className="flex-grow border-t border-dark-border"></div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center space-x-2 bg-dark-card border border-dark-border text-white p-4 rounded-xl hover:bg-slate-800 transition-colors">
-              <Mail size={18} />
-              <span>Google</span>
-            </button>
-            <button className="flex items-center justify-center space-x-2 bg-dark-card border border-dark-border text-white p-4 rounded-xl hover:bg-slate-800 transition-colors">
-              <Smartphone size={18} />
-              <span>Teléfono</span>
-            </button>
-          </div>
+        <div className="grid grid-cols-2 gap-4">
+          <button className="flex items-center justify-center space-x-2 bg-dark-card border border-dark-border text-white p-4 rounded-xl hover:bg-slate-800 transition-colors">
+            <Mail size={18} />
+            <span>Google</span>
+          </button>
+          <button className="flex items-center justify-center space-x-2 bg-dark-card border border-dark-border text-white p-4 rounded-xl hover:bg-slate-800 transition-colors">
+            <Smartphone size={18} />
+            <span>Teléfono</span>
+          </button>
         </div>
 
         <div className="mt-10 text-center">

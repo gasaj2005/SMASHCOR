@@ -10,36 +10,87 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate checking auth status
-    const timer = setTimeout(() => {
-      // By default not logged in, but we can set it to mockUser to bypass if we want
-      // For this demo, let's start non-logged in so we see the Splash -> Login flow
-      setCurrentUser(null);
-      setLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
+    const storedUser = localStorage.getItem('smashcor_currentUser');
+    const storedUsers = localStorage.getItem('smashcor_users');
+
+    if (!storedUsers) {
+      // Attach a default password to the mock data for testing if needed
+      const initialMockUser = { ...mockUser, password: '123' };
+      localStorage.setItem('smashcor_users', JSON.stringify([initialMockUser]));
+    }
+
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
 
-  const login = (email, pass) => {
-    // Simulate login
-    setCurrentUser(mockUser);
+  const login = (username, password) => {
+    const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
+    const user = users.find(u => u.username === username && u.password === password);
+    
+    if (user) {
+      setCurrentUser(user);
+      localStorage.setItem('smashcor_currentUser', JSON.stringify(user));
+      return { success: true };
+    } else {
+      return { success: false, message: 'Usuario o contraseña incorrectos' };
+    }
   };
 
   const register = (data) => {
-    // Simulate register
-    setCurrentUser({
-      ...mockUser,
+    const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
+    
+    if (users.find(u => u.username === data.username)) {
+      return { success: false, message: 'El nombre de usuario ya está en uso' };
+    }
+
+    const newUser = {
+      points: 0,
+      racketModel: "Sin especificar",
+      racketPhoto: "",
+      bio: "¡Nuevo jugador en SmashCor!",
       ...data,
-      id: 'u' + Math.floor(Math.random() * 1000)
-    });
+      id: 'u' + Math.floor(Math.random() * 10000)
+    };
+
+    const updatedUsers = [...users, newUser];
+    localStorage.setItem('smashcor_users', JSON.stringify(updatedUsers));
+    
+    setCurrentUser(newUser);
+    localStorage.setItem('smashcor_currentUser', JSON.stringify(newUser));
+    return { success: true };
+  };
+
+  const updateProfile = (data) => {
+    if (!currentUser) return;
+    const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
+    const updatedUser = { ...currentUser, ...data };
+    
+    const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
+    localStorage.setItem('smashcor_users', JSON.stringify(updatedUsers));
+    
+    setCurrentUser(updatedUser);
+    localStorage.setItem('smashcor_currentUser', JSON.stringify(updatedUser));
+  };
+
+  const deleteAccount = () => {
+    if (!currentUser) return;
+    const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
+    const updatedUsers = users.filter(u => u.id !== currentUser.id);
+    localStorage.setItem('smashcor_users', JSON.stringify(updatedUsers));
+    
+    setCurrentUser(null);
+    localStorage.removeItem('smashcor_currentUser');
   };
 
   const logout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('smashcor_currentUser');
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ currentUser, login, register, logout, updateProfile, deleteAccount, loading }}>
       {children}
     </AuthContext.Provider>
   );
