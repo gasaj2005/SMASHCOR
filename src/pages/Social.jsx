@@ -120,30 +120,30 @@ export default function Social() {
       <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="fixed inset-0 z-40 bg-dark-bg flex flex-col pb-[72px] mx-auto w-full max-w-md shadow-2xl border-x border-dark-border/50">
         {/* Header Chat */}
         <div 
-          className="bg-dark-card border-b border-dark-border p-4 flex items-center shadow-lg pt-safe select-none cursor-pointer hover:bg-dark-card/80 transition"
+          className="sticky top-0 z-20 bg-dark-card/95 backdrop-blur-md border-b border-dark-border p-4 flex items-center shadow-lg select-none cursor-pointer hover:bg-dark-card/80 transition"
           onClick={() => setShowCommInfo(true)}
         >
           <button 
             onClick={(e) => { e.stopPropagation(); setActiveChat(null); }} 
-            className="mr-3 text-slate-400 hover:text-white p-2 bg-dark-bg rounded-xl transition"
+            className="mr-3 text-slate-400 hover:text-white p-2 bg-dark-bg rounded-xl transition shadow-sm border border-dark-border/50"
           >
             <ArrowLeft size={20} />
           </button>
           {currentChatComm.iconBase64 ? (
-            <img src={currentChatComm.iconBase64} alt="icon" className="w-10 h-10 rounded-full object-cover mr-3 border border-dark-border" />
+            <img src={currentChatComm.iconBase64} alt="icon" className="w-10 h-10 rounded-full object-cover mr-3 border border-brand shadow-sm" />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center text-brand text-lg mr-3">
+            <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center text-brand text-lg mr-3 shadow-sm border border-brand/30">
               {currentChatComm.icon || currentChatComm.name.charAt(0)}
             </div>
           )}
-          <div>
-            <h3 className="font-bold text-white leading-tight">{currentChatComm.name}</h3>
-            <span className="text-xs text-slate-400">{currentChatComm.membersCount} miembros</span>
+          <div className="flex-1 truncate">
+            <h3 className="font-bold text-white text-sm leading-tight truncate">{currentChatComm.name}</h3>
+            <span className="text-[10px] uppercase font-bold tracking-widest text-brand">{currentChatComm.membersCount} miembros</span>
           </div>
         </div>
 
         {/* Muro */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={chatScrollRef}>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 pt-6" ref={chatScrollRef}>
           {!currentChatComm.messages || currentChatComm.messages.length === 0 ? (
             <div className="text-center text-slate-500 py-10">No hay mensajes. ¡Rompe el hielo!</div>
           ) : (
