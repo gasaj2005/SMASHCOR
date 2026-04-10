@@ -120,14 +120,14 @@ export default function Play() {
       {/* ── MIS PARTIDOS ── */}
       {activeTab === 'my_matches' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-          {myMatches.length === 0 ? (
+          {!myMatches || myMatches.length === 0 ? (
             <div className="text-center text-slate-400 py-14 bg-dark-card border border-dark-border rounded-2xl">
               <Users size={36} className="mx-auto mb-3 text-slate-600" />
               <p className="font-semibold text-white mb-1">Sin partidos activos</p>
               <p className="text-sm">Crea uno o únete desde "Disponibles".</p>
             </div>
           ) : (
-            myMatches.map(match => (
+            myMatches?.length > 0 && myMatches.map(match => (
               <MatchCard key={match.id} match={match} onClick={() => setSelectedRoom(match)} />
             ))
           )}
@@ -137,14 +137,14 @@ export default function Play() {
       {/* ── PARTIDOS DISPONIBLES (PÚBLICOS) ── */}
       {activeTab === 'public' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-          {publicRooms.length === 0 ? (
+          {!publicRooms || publicRooms.length === 0 ? (
             <div className="text-center text-slate-400 py-14 bg-dark-card border border-dark-border rounded-2xl">
               <Globe size={36} className="mx-auto mb-3 text-slate-600" />
               <p className="font-semibold text-white mb-1">No hay partidos disponibles</p>
               <p className="text-sm">¡Sé el primero en crear uno público!</p>
             </div>
           ) : (
-            publicRooms.map(match => (
+            publicRooms?.length > 0 && publicRooms.map(match => (
               <PublicMatchCard key={match.id} match={match} onJoin={() => handleJoinPublic(match.id)} />
             ))
           )}
@@ -288,10 +288,10 @@ function MatchCard({ match, onClick }) {
       </div>
       <div className="mt-4 pt-3 border-t border-dark-border flex items-center justify-between">
         <div className="flex -space-x-2">
-          {players.map((p, i) => (
+          {players?.length > 0 && players.map((p, i) => (
             <img key={p?.id || i} src={p?.avatar || 'https://via.placeholder.com/150'} className="w-7 h-7 rounded-full border-2 border-dark-card" alt="Player" />
           ))}
-          {Array.from({ length: Math.max(0, 4 - players.length) }).map((_, i) => (
+          {Array.from({ length: Math.max(0, 4 - (players?.length || 0)) }).map((_, i) => (
             <div key={`e-${i}`} className="w-7 h-7 rounded-full border-2 border-dark-card bg-slate-800 flex items-center justify-center text-slate-500">
               <Plus size={10} />
             </div>

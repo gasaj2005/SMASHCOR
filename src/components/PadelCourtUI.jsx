@@ -145,7 +145,7 @@ export default function PadelCourtUI({ match }) {
         <div className="absolute top-[25%] bottom-[25%] left-1/2 w-px -ml-px bg-white/60 pointer-events-none" />
 
         {/* ── SLOTS ── */}
-        {COURT_POSITIONS.map(pos => {
+        {COURT_POSITIONS?.length > 0 && COURT_POSITIONS.map(pos => {
           const player     = getPlayerInPosition(pos.id);
           const isEmpty    = !player;
           const isMe       = isCurrentUser(player);
@@ -262,7 +262,7 @@ export default function PadelCourtUI({ match }) {
               </div>
               <div className="px-6 pb-8 pt-2">
                 <p className="text-sm text-slate-300 italic text-center leading-relaxed">
-                  "{selectedPlayer.bio || 'Preparado para darlo todo en la pista.'}"
+                  "{selectedPlayer?.bio || 'Preparado para darlo todo en la pista.'}"
                 </p>
               </div>
             </motion.div>

@@ -40,22 +40,22 @@ export const AuthProvider = ({ children }) => {
       if (storedRooms) {
         try {
           const parsed = JSON.parse(storedRooms);
-          const normalized = Array.isArray(parsed) ? parsed.map(normalizeRoom) : mockRooms;
+          const normalized = Array.isArray(parsed) ? parsed.map(normalizeRoom) : [];
           setRooms(normalized);
           // Reescribir en localStorage ya normalizado
           localStorage.setItem('smashcor_rooms', JSON.stringify(normalized));
         } catch {
-          // localStorage corrupto: resetear a mock
-          localStorage.setItem('smashcor_rooms', JSON.stringify(mockRooms));
-          setRooms(mockRooms);
+          // localStorage corrupto: resetear a vacío
+          localStorage.setItem('smashcor_rooms', JSON.stringify([]));
+          setRooms([]);
         }
       } else {
-        localStorage.setItem('smashcor_rooms', JSON.stringify(mockRooms));
-        setRooms(mockRooms);
+        localStorage.setItem('smashcor_rooms', JSON.stringify([]));
+        setRooms([]);
       }
     } catch (e) {
       console.error('AuthContext init error:', e);
-      setRooms(mockRooms);
+      setRooms([]);
     }
     setLoading(false);
   }, []);
