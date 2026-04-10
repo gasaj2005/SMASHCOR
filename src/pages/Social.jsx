@@ -117,29 +117,40 @@ export default function Social() {
   // ── RENDER DE CHAT AISLADO ──
   if (activeChat && currentChatComm) {
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col bg-gray-900 w-full max-w-md mx-auto shadow-2xl">
-          {/* CAJA 1: El Header */}
-        <div className="flex-none flex items-center p-4 bg-gray-800 border-b border-gray-700 z-50">
-          <button onClick={(e) => { e.stopPropagation(); setActiveChat(null); }} className="text-white mr-4">
-            <ArrowLeft size={24} />
+      <div className="fixed inset-0 z-[999] flex flex-col bg-gray-900 w-full max-w-md mx-auto h-[100dvh] overflow-hidden shadow-2xl">
+        
+        {/* 1. HEADER FIJO */}
+        <header className="flex-none h-16 flex items-center justify-between px-4 bg-gray-800 border-b border-gray-700 shadow-sm z-10">
+          <button 
+            onClick={(e) => { e.stopPropagation(); setActiveChat(null); }} 
+            className="text-white font-semibold flex items-center gap-1"
+          >
+            {"<"} Volver
           </button>
+          
           <div 
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-2 cursor-pointer bg-gray-700 px-3 py-1 rounded-full hover:bg-gray-600 transition"
             onClick={() => setShowCommInfo(true)}
           >
             {currentChatComm.iconBase64 ? (
-              <img src={currentChatComm.iconBase64} alt="Logo" className="w-10 h-10 rounded-full object-cover bg-gray-600" />
+              <img 
+                src={currentChatComm.iconBase64} 
+                alt="Logo" 
+                className="w-8 h-8 rounded-full object-cover bg-gray-600" 
+              />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center text-brand text-lg bg-gray-600">
+              <div className="w-8 h-8 rounded-full bg-brand/20 flex items-center justify-center text-brand text-xs font-bold bg-gray-600">
                 {currentChatComm.icon || currentChatComm.name.charAt(0)}
               </div>
             )}
-            <h2 className="text-white font-bold text-lg">{currentChatComm.name}</h2>
+            <h2 className="text-white font-bold text-sm truncate max-w-[120px]">
+              {currentChatComm.name || "Comunidad"}
+            </h2>
           </div>
-        </div>
+        </header>
 
-        {/* CAJA 2: Los Mensajes */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={chatScrollRef}>
+        {/* 2. ZONA DE MENSAJES */}
+        <main className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-900" ref={chatScrollRef}>
           {!currentChatComm.messages || currentChatComm.messages.length === 0 ? (
             <div className="text-center text-slate-500 py-10">No hay mensajes. ¡Rompe el hielo!</div>
           ) : (
@@ -165,23 +176,23 @@ export default function Social() {
               );
             })
           )}
-        </div>
+        </main>
 
-        {/* CAJA 3: El Input */}
-        <div className="flex-none p-4 bg-gray-800 border-t border-gray-700 pb-safe">
-          <form onSubmit={handleSendChat} className="flex gap-2">
+        {/* 3. ZONA DE INPUT FIJA */}
+        <footer className="flex-none min-h-[5rem] bg-gray-800 border-t border-gray-700 p-4 pb-safe flex items-center gap-2 z-10">
+          <form onSubmit={handleSendChat} className="flex gap-2 w-full">
             <input
               type="text"
               value={chatMessage}
               onChange={e => setChatMessage(e.target.value)}
               placeholder="Escribe un mensaje..."
-              className="flex-1 bg-gray-700 border border-gray-600 p-3.5 rounded-full text-white text-sm focus:outline-none focus:border-brand transition-colors"
+              className="flex-1 bg-gray-700 text-white rounded-full px-4 py-2 focus:outline-none"
             />
-            <button type="submit" disabled={!chatMessage.trim()} className="flex-none p-3.5 bg-brand text-dark-bg rounded-full disabled:opacity-50">
-              <Send size={20} />
+            <button type="submit" disabled={!chatMessage.trim()} className="flex-none bg-lime-500 text-black font-bold rounded-full px-4 py-2 disabled:opacity-50">
+              Enviar
             </button>
           </form>
-        </div>
+        </footer>
 
         {/* Modal Info de Comunidad */}
         <AnimatePresence>
