@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Clock, ShieldAlert, ArrowLeft, Plus, Globe, Lock, Users } from 'lucide-react';
+import { MapPin, Clock, ShieldAlert, ArrowLeft, Plus, Globe, Lock, Users, Trash2, LogOut, AlertTriangle, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { format, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -14,10 +14,11 @@ const TABS = [
 ];
 
 export default function Play() {
-  const { currentUser, rooms, addRoom, joinRoom } = useAuth();
+  const { currentUser, rooms, addRoom, joinRoom, leaveRoom, deleteRoom } = useAuth();
 
   const [activeTab, setActiveTab] = useState('my_matches');
   const [selectedRoom, setSelectedRoom] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const [joinCode, setJoinCode] = useState('');
   const [joinError, setJoinError] = useState('');
@@ -85,13 +86,85 @@ export default function Play() {
     const currentRoomState = rooms.find(r => r.id === selectedRoom.id) || selectedRoom;
     return (
       <div className="flex flex-col bg-dark-bg p-4 pb-24 overflow-y-auto min-h-screen">
-        <button
-          onClick={() => setSelectedRoom(null)}
-          className="flex items-center w-max text-slate-400 hover:text-white mb-5 bg-dark-card px-4 py-2 rounded-xl text-sm font-semibold border border-dark-border shadow-sm transition"
-        >
-          <ArrowLeft size={16} className="mr-2" /> Volver
-        </button>
+        <div className="flex justify-between items-center mb-5">
+          <button
+            onClick={() => setSelectedRoom(null)}
+            className="flex items-center text-slate-400 hover:text-white bg-dark-card px-4 py-2 rounded-xl text-sm font-semibold border border-dark-border shadow-sm transition"
+          >
+            <ArrowLeft size={16} className="mr-2" /> Volver
+          </button>
+          
+          {currentUser?.id === currentRoomState.creatorId ? (
+            <button
+              onClick={() => setConfirmAction({ type: 'delete', roomId: currentRoomState.id })}
+              className="flex items-center text-red-500 hover:text-red-400 bg-red-500/10 px-3 py-2 rounded-xl text-sm font-bold border border-red-500/20 shadow-sm transition"
+            >
+              <Trash2 size={16} className="mr-1.5" /> Eliminar
+            </button>
+          ) : (
+            <button
+              onClick={() => setConfirmAction({ type: 'leave', roomId: currentRoomState.id })}
+              className="flex items-center text-orange-400 hover:text-orange-300 bg-orange-400/10 px-3 py-2 rounded-xl text-sm font-bold border border-orange-400/20 shadow-sm transition"
+            >
+              <LogOut size={16} className="mr-1.5" /> Abandonar
+            </button>
+          )}
+        </div>
+
         <PadelCourtUI match={currentRoomState} />
+
+        {/* MODAL DE CONFIRMACIÓN DE ACCIÓN */}
+        <AnimatePresence>
+          {confirmAction && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                onClick={() => setConfirmAction(null)}
+              />
+              <motion.div
+                initial={{ y: 20, opacity: 0, scale: 0.95 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: 20, opacity: 0, scale: 0.95 }}
+                className="bg-dark-card border border-dark-border w-full max-w-sm rounded-[2rem] p-6 z-10 shadow-2xl relative flex flex-col items-center text-center"
+              >
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${confirmAction.type === 'delete' ? 'bg-red-500/20 text-red-500' : 'bg-orange-500/20 text-orange-500'}`}>
+                  {confirmAction.type === 'delete' ? <Trash2 size={32} /> : <LogOut size={32} />}
+                </div>
+                <h3 className="text-xl font-black text-white mb-2">
+                  {confirmAction.type === 'delete' ? '¿Eliminar Sala?' : '¿Abandonar Partido?'}
+                </h3>
+                <p className="text-sm text-slate-400 mb-6">
+                  {confirmAction.type === 'delete' 
+                    ? 'Esta acción borrará la sala por completo y expulsará a todos los jugadores. No se puede deshacer.'
+                    : 'Dejarás un hueco vacío en la pista. Podrás volver a unirte más tarde si hay espacio.'}
+                </p>
+                <div className="flex gap-3 w-full">
+                  <button
+                    onClick={() => setConfirmAction(null)}
+                    className="flex-1 py-3.5 rounded-xl font-bold bg-dark-bg border border-dark-border text-white hover:bg-slate-800 transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirmAction.type === 'delete') {
+                        deleteRoom(confirmAction.roomId);
+                      } else {
+                        leaveRoom(confirmAction.roomId);
+                      }
+                      setConfirmAction(null);
+                      setSelectedRoom(null);
+                    }}
+                    className={`flex-1 py-3.5 rounded-xl font-black text-white shadow-lg transition ${confirmAction.type === 'delete' ? 'bg-red-500 hover:bg-red-600' : 'bg-orange-500 hover:bg-orange-600'}`}
+                  >
+                    Confirmar
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }

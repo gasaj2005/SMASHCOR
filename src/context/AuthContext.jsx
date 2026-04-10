@@ -11,6 +11,7 @@ const normalizeRoom = (r) => ({
   players: Array.isArray(r.players) ? r.players : [],
   roomCode: r.roomCode || ('PAD-' + r.id?.slice(-4).toUpperCase()) || 'PAD-????',
   isPrivate: r.isPrivate ?? false,
+  creatorId: r.creatorId || (Array.isArray(r.players) && r.players[0]?.id) || 'unknown',
 });
 
 export const AuthProvider = ({ children }) => {
@@ -138,6 +139,7 @@ export const AuthProvider = ({ children }) => {
     if (!currentUser) return null;
     const newRoom = normalizeRoom({
       id: 'r' + Math.floor(Math.random() * 10000),
+      creatorId: currentUser.id,
       ...roomData,
       players: [{ ...currentUser, courtPosition: 'left-top' }],
     });
@@ -195,11 +197,36 @@ export const AuthProvider = ({ children }) => {
     return { success: true, room: updatedRoom };
   };
 
+  const leaveRoom = (roomId) => {
+    if (!currentUser || !roomId) return { success: false };
+    const safeRooms = Array.isArray(rooms) ? rooms : [];
+    const room = safeRooms.find(r => r.id === roomId);
+    if (!room) return { success: false };
+    
+    // Remueve al usuario actual de los players
+    const players = Array.isArray(room.players) ? room.players : [];
+    const updatedPlayers = players.filter(p => p.id !== currentUser.id);
+    
+    const updatedRoom = normalizeRoom({ ...room, players: updatedPlayers });
+    const updatedRooms = safeRooms.map(r => r.id === roomId ? updatedRoom : r);
+    persistRooms(updatedRooms);
+    return { success: true };
+  };
+
+  const deleteRoom = (roomId) => {
+    if (!currentUser || !roomId) return { success: false };
+    const safeRooms = Array.isArray(rooms) ? rooms : [];
+    // Borrado duro filtrando la sala
+    const updatedRooms = safeRooms.filter(r => r.id !== roomId);
+    persistRooms(updatedRooms);
+    return { success: true };
+  };
+
   return (
     <AuthContext.Provider value={{
       currentUser, login, register, logout, updateProfile, deleteAccount, loading,
       rooms: Array.isArray(rooms) ? rooms : [],
-      addRoom, joinRoom, updatePlayerPosition,
+      addRoom, joinRoom, updatePlayerPosition, leaveRoom, deleteRoom,
     }}>
       {children}
     </AuthContext.Provider>
