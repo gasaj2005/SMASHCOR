@@ -37,10 +37,14 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  const persistRooms = (updatedRooms) => {
+    setRooms(updatedRooms);
+    localStorage.setItem('smashcor_rooms', JSON.stringify(updatedRooms));
+  };
+
   const login = (username, password) => {
     const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
     const user = users.find(u => u.username === username && u.password === password);
-    
     if (user) {
       setCurrentUser(user);
       localStorage.setItem('smashcor_currentUser', JSON.stringify(user));
@@ -52,23 +56,16 @@ export const AuthProvider = ({ children }) => {
 
   const register = (data) => {
     const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
-    
     if (users.find(u => u.username === data.username)) {
       return { success: false, message: 'El nombre de usuario ya está en uso' };
     }
-
     const newUser = {
-      points: 0,
-      racketModel: "Sin especificar",
-      racketPhoto: "",
-      bio: "¡Nuevo jugador en SmashCor!",
-      ...data,
+      points: 0, racketModel: "Sin especificar", racketPhoto: "",
+      bio: "¡Nuevo jugador en SmashCor!", ...data,
       id: 'u' + Math.floor(Math.random() * 10000)
     };
-
     const updatedUsers = [...users, newUser];
     localStorage.setItem('smashcor_users', JSON.stringify(updatedUsers));
-    
     setCurrentUser(newUser);
     localStorage.setItem('smashcor_currentUser', JSON.stringify(newUser));
     return { success: true };
@@ -78,10 +75,8 @@ export const AuthProvider = ({ children }) => {
     if (!currentUser) return;
     const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
     const updatedUser = { ...currentUser, ...data };
-    
     const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
     localStorage.setItem('smashcor_users', JSON.stringify(updatedUsers));
-    
     setCurrentUser(updatedUser);
     localStorage.setItem('smashcor_currentUser', JSON.stringify(updatedUser));
   };
@@ -91,7 +86,6 @@ export const AuthProvider = ({ children }) => {
     const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
     const updatedUsers = users.filter(u => u.id !== currentUser.id);
     localStorage.setItem('smashcor_users', JSON.stringify(updatedUsers));
-    
     setCurrentUser(null);
     localStorage.removeItem('smashcor_currentUser');
   };
@@ -105,26 +99,26 @@ export const AuthProvider = ({ children }) => {
     const newRoom = {
       id: 'r' + Math.floor(Math.random() * 10000),
       ...roomData,
-      players: [{
-        ...currentUser,
-        courtPosition: 'left-top'
-      }]
+      players: [{ ...currentUser, courtPosition: 'left-top' }]
     };
     const updatedRooms = [...rooms, newRoom];
-    setRooms(updatedRooms);
-    localStorage.setItem('smashcor_rooms', JSON.stringify(updatedRooms));
+    persistRooms(updatedRooms);
     return newRoom;
   };
 
-  const joinRoom = (roomCode) => {
-    const room = rooms.find(r => r.roomCode.toUpperCase() === roomCode.toUpperCase());
-    if (!room) return { success: false, message: 'Código de sala incorrecto' };
-    if (room.players.length >= 4) return { success: false, message: 'La sala ya está llena' };
-    if (room.players.some(p => p.id === currentUser.id)) return { success: false, message: 'Ya estás en esta sala', room };
+  // Unirse por CÓDIGO (salas privadas) o por ID directo (salas públicas)
+  const joinRoom = (identifier, byId = false) => {
+    const room = byId
+      ? rooms.find(r => r.id === identifier)
+      : rooms.find(r => r.roomCode && r.roomCode.toUpperCase() === identifier.toUpperCase());
 
-    const positions = ['left-top', 'right-top', 'left-bottom', 'right-bottom'];
+    if (!room) return { success: false, message: 'Código incorrecto o sala inexistente' };
+    if (room.players.length >= 4) return { success: false, message: 'Lo sentimos, la sala se ha completado' };
+    if (room.players.some(p => p.id === currentUser.id)) return { success: true, room, alreadyIn: true };
+
+    const allPositions = ['left-top', 'right-top', 'left-bottom', 'right-bottom'];
     const takenPositions = room.players.map(p => p.courtPosition);
-    const availablePosition = positions.find(pos => !takenPositions.includes(pos));
+    const availablePosition = allPositions.find(pos => !takenPositions.includes(pos));
 
     const updatedRoom = {
       ...room,
@@ -132,16 +126,34 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updatedRooms = rooms.map(r => r.id === room.id ? updatedRoom : r);
-    setRooms(updatedRooms);
-    localStorage.setItem('smashcor_rooms', JSON.stringify(updatedRooms));
-    
+    persistRooms(updatedRooms);
+    return { success: true, room: updatedRoom };
+  };
+
+  // Drag & Drop: mueve al currentUser a una nueva posición libre en la pista y persiste
+  const updatePlayerPosition = (roomId, newPosition) => {
+    const room = rooms.find(r => r.id === roomId);
+    if (!room) return { success: false };
+
+    const targetOccupant = room.players.find(p => p.courtPosition === newPosition);
+    if (targetOccupant && targetOccupant.id !== currentUser.id) {
+      return { success: false, message: 'Esa posición ya está ocupada' };
+    }
+
+    const updatedPlayers = room.players.map(p =>
+      p.id === currentUser.id ? { ...p, courtPosition: newPosition } : p
+    );
+
+    const updatedRoom = { ...room, players: updatedPlayers };
+    const updatedRooms = rooms.map(r => r.id === roomId ? updatedRoom : r);
+    persistRooms(updatedRooms);
     return { success: true, room: updatedRoom };
   };
 
   return (
-    <AuthContext.Provider value={{ 
+    <AuthContext.Provider value={{
       currentUser, login, register, logout, updateProfile, deleteAccount, loading,
-      rooms, addRoom, joinRoom
+      rooms, addRoom, joinRoom, updatePlayerPosition
     }}>
       {children}
     </AuthContext.Provider>
