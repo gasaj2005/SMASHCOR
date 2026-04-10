@@ -22,9 +22,12 @@ export const leaderboardData = [
 ].sort((a,b) => b.points - a.points);
 
 export const newsFeed = [
-  { id: 'n1', type: 'system', title: '¡Actualización V2.0 Disponible!', content: 'Ya puedes disfrutar del nuevo diseño y la gestión de comunidades.', date: '2026-04-08T10:00:00Z' },
-  { id: 'n2', type: 'ai_achievement', title: '¡Racha Imparable!', content: 'Ana García ha ganado sus últimos 5 partidos y está a un paso de subir de nivel.', date: '2026-04-07T18:30:00Z' },
-  { id: 'n3', type: 'ai_stats', title: 'Semana Intensa', content: 'Se han jugado más de 300 partidos esta semana en Córdoba. ¡El nivel 4 Media ha estado on-fire!', date: '2026-04-06T12:15:00Z' }
+  { id: 'n1', type: 'app_update', title: '¡Bienvenidos a la versión 1.0 de SmashCor!', content: 'Lanzamos la aplicación oficial. Podrás crear partidas, unirte a grupos, registrar tus palas y competir en el ranking vivo.', date: '2026-04-10T10:00:00Z' },
+  { id: 'n2', type: 'app_update', title: 'Nueva función de estadísticas disponible', content: 'Tus partidos ahora generarán gráficas y analizarán tus rachas de victoria en tu perfil. Mantén tu progreso al día.', date: '2026-04-09T18:30:00Z' },
+  { id: 'n3', type: 'padel_news', title: 'Babolat lanza la nueva Technical Viper', content: 'El actual número 1 ha presentado la que será su pala estrella para esta temporada. Más reactiva, fibra de carbono 12K y un balance aún más alto.', date: '2026-04-08T12:15:00Z' },
+  { id: 'n4', type: 'padel_news', title: 'Premier Padel aterriza una vez más en Madrid', content: 'El circuito mundial más importante llegará a la capital española a finales de verano. Ve guardando la fecha en el calendario.', date: '2026-04-07T09:00:00Z' },
+  { id: 'n5', type: 'community', title: '¡Racha Imparable de PadelKing!', content: 'El usuario "PadelKing" lleva 5 victorias consecutivas esta semana. Las pistas de la zona norte ya le temen cuando saca la bandeja.', date: '2026-04-06T20:30:00Z' },
+  { id: 'n6', type: 'community', title: 'El partido más largo del mes', content: '3 horas de infarto en la pista central. Laura y Charly pelearon un tie-break del tercer set que ya es historia local (14-12).', date: '2026-04-05T14:45:00Z' }
 ];
 
 export const mockRooms = [
