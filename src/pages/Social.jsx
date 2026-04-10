@@ -118,32 +118,29 @@ export default function Social() {
   if (activeChat && currentChatComm) {
     return (
       <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="fixed inset-0 z-40 bg-dark-bg flex flex-col pb-[72px] mx-auto w-full max-w-md shadow-2xl border-x border-dark-border/50">
-        {/* Header Chat */}
-        <div 
-          className="sticky top-0 z-20 bg-dark-card/95 backdrop-blur-md border-b border-dark-border p-4 flex items-center shadow-lg select-none cursor-pointer hover:bg-dark-card/80 transition"
-          onClick={() => setShowCommInfo(true)}
-        >
+        {/* Header Chat Exacto Solicitado */}
+        <div className="sticky top-0 z-50 w-full bg-gray-900 border-b border-gray-800 p-4 flex items-center shadow-md">
           <button 
             onClick={(e) => { e.stopPropagation(); setActiveChat(null); }} 
-            className="mr-3 text-slate-400 hover:text-white p-2 bg-dark-bg rounded-xl transition shadow-sm border border-dark-border/50"
+            className="text-slate-400 hover:text-white p-2"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={24} />
           </button>
-          {currentChatComm.iconBase64 ? (
-            <img src={currentChatComm.iconBase64} alt="icon" className="w-10 h-10 rounded-full object-cover mr-3 border border-brand shadow-sm" />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center text-brand text-lg mr-3 shadow-sm border border-brand/30">
-              {currentChatComm.icon || currentChatComm.name.charAt(0)}
-            </div>
-          )}
-          <div className="flex-1 truncate">
-            <h3 className="font-bold text-white text-sm leading-tight truncate">{currentChatComm.name}</h3>
-            <span className="text-[10px] uppercase font-bold tracking-widest text-brand">{currentChatComm.membersCount} miembros</span>
+          
+          <div className="flex flex-1 items-center gap-3 ml-2 cursor-pointer" onClick={() => setShowCommInfo(true)}>
+            {currentChatComm.iconBase64 ? (
+              <img src={currentChatComm.iconBase64} alt="icon" className="w-10 h-10 rounded-full object-cover" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center text-brand text-lg">
+                {currentChatComm.icon || currentChatComm.name.charAt(0)}
+              </div>
+            )}
+            <h2 className="text-white font-bold text-lg truncate flex-1">{currentChatComm.name}</h2>
           </div>
         </div>
 
         {/* Muro */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 pt-6" ref={chatScrollRef}>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 pt-16" ref={chatScrollRef}>
           {!currentChatComm.messages || currentChatComm.messages.length === 0 ? (
             <div className="text-center text-slate-500 py-10">No hay mensajes. ¡Rompe el hielo!</div>
           ) : (
@@ -187,48 +184,48 @@ export default function Social() {
           </form>
         </div>
 
-        {/* Modal Info de Comunidad */}
+        {/* Modal Info de Comunidad Exacto */}
         <AnimatePresence>
           {showCommInfo && (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4">
               <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-                onClick={() => setShowCommInfo(false)}
-              />
-              <motion.div
-                initial={{ y: 20, opacity: 0, scale: 0.95 }}
-                animate={{ y: 0, opacity: 1, scale: 1 }}
-                exit={{ y: 20, opacity: 0, scale: 0.95 }}
-                className="bg-dark-card border border-dark-border w-full max-w-sm rounded-[2rem] p-6 z-10 shadow-2xl relative flex flex-col items-center text-center"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative flex flex-col items-center text-center"
               >
                 {currentChatComm.iconBase64 ? (
-                  <img src={currentChatComm.iconBase64} alt="icon" className="w-20 h-20 rounded-full object-cover mb-4 border-2 border-brand" />
+                  <img src={currentChatComm.iconBase64} alt="icon" className="w-32 h-32 rounded-full object-cover mb-4 shadow-lg border-2 border-slate-700" />
                 ) : (
-                  <div className="w-20 h-20 rounded-full bg-brand/20 flex items-center justify-center text-brand text-4xl mb-4">
+                  <div className="w-32 h-32 rounded-full bg-brand/20 flex items-center justify-center text-brand text-5xl mb-4">
                     {currentChatComm.icon || currentChatComm.name.charAt(0)}
                   </div>
                 )}
-                <h3 className="text-xl font-black text-white mb-1">{currentChatComm.name}</h3>
-                <p className="text-xs text-brand mb-4 uppercase tracking-widest font-bold">{currentChatComm.isPrivate ? 'Privada 🔒' : 'Pública 🌍'}</p>
-                <p className="text-sm text-slate-300 mb-6 px-4">
-                  {currentChatComm.description || 'Sin descripción detallada disponible.'}
-                </p>
-                <div className="w-full bg-dark-bg rounded-xl p-4 mb-6 border border-dark-border flex justify-between">
+                
+                <h2 className="text-2xl font-black text-white mb-4">{currentChatComm.name}</h2>
+                
+                <div className="w-full text-left bg-black/30 p-4 rounded-xl mb-4 border border-gray-800">
+                  <p className="text-sm text-slate-300 italic">
+                    "{currentChatComm.description || 'Sin descripción pormenorizada.'}"
+                  </p>
+                </div>
+                
+                <div className="w-full flex justify-between bg-black/50 p-4 rounded-xl mb-6">
                   <div className="text-left">
-                    <p className="text-[10px] text-slate-500 uppercase font-bold">Líder</p>
-                    <p className="text-sm font-bold text-white truncate max-w-[120px]">{globalUsers.find(u => u.id === currentChatComm.leaderId)?.name || 'Anónimo'}</p>
+                    <p className="text-xs text-slate-500 uppercase font-bold">Líder</p>
+                    <p className="text-base font-bold text-white">{globalUsers.find(u => u.id === currentChatComm.leaderId)?.name || 'Anónimo'}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] text-slate-500 uppercase font-bold">Miembros</p>
-                    <p className="text-sm font-bold text-white">{currentChatComm.membersCount} / {currentChatComm.maxMembers}</p>
+                    <p className="text-xs text-slate-500 uppercase font-bold">Miembros</p>
+                    <p className="text-base font-bold text-white">{currentChatComm.membersCount} / {currentChatComm.maxMembers}</p>
                   </div>
                 </div>
+
                 <button
                   onClick={() => setShowCommInfo(false)}
-                  className="w-full py-3.5 rounded-xl font-bold bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 transition"
+                  className="w-full py-4 rounded-xl font-bold bg-white text-black hover:bg-slate-200 transition text-lg"
                 >
-                  Cerrar
+                  Cerrar Detalles
                 </button>
               </motion.div>
             </div>
