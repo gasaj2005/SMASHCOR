@@ -32,14 +32,20 @@ export default function Play() {
     isPrivate: false,
   });
 
-  // Mis Partidos: salas en las que está el usuario actual
-  const myMatches = rooms.filter(r => r.players.some(p => p.id === currentUser.id));
+  // Null-safe array (si el contexto aún no cargó, rooms puede ser [])
+  const safeRooms = Array.isArray(rooms) ? rooms : [];
 
-  // Partidos Disponibles: salas públicas con huecos y en las que el usuario NO está
-  const publicRooms = rooms.filter(r =>
+  // Mis Partidos: salas en las que está el usuario actual
+  const myMatches = safeRooms.filter(r =>
+    Array.isArray(r?.players) && r.players.some(p => p.id === currentUser?.id)
+  );
+
+  // Partidos Disponibles: públicas con huecos donde el usuario NO está aún
+  const publicRooms = safeRooms.filter(r =>
     !r.isPrivate &&
+    Array.isArray(r?.players) &&
     r.players.length < 4 &&
-    !r.players.some(p => p.id === currentUser.id)
+    !r.players.some(p => p.id === currentUser?.id)
   );
 
   const handleCreateRoom = (e) => {
@@ -54,8 +60,8 @@ export default function Play() {
     setJoinError('');
     if (!joinCode.trim()) return;
     const res = joinRoom(joinCode);
-    if (!res.success) {
-      setJoinError(res.message);
+    if (!res || !res.success) {
+      setJoinError(res?.message ?? 'Error desconocido');
     } else {
       setSelectedRoom(res.room);
       setJoinCode('');
@@ -63,11 +69,13 @@ export default function Play() {
   };
 
   const handleJoinPublic = (roomId) => {
-    const res = joinRoom(roomId, true); // byId = true
-    if (!res.success) {
-      setJoinError(res.message);
+    setJoinError('');
+    const res = joinRoom(roomId, true);
+    if (!res || !res.success) {
+      setJoinError(res?.message ?? 'Error al unirse');
     } else {
-      const freshRoom = rooms.find(r => r.id === res.room.id) || res.room;
+      // Leer el room fresco desde rooms (ya actualizado por joinRoom)
+      const freshRoom = safeRooms.find(r => r.id === (res.room?.id ?? roomId)) || res.room;
       setSelectedRoom(freshRoom);
     }
   };
