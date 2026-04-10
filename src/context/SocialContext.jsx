@@ -108,11 +108,13 @@ export const SocialProvider = ({ children }) => {
     return { success: true };
   };
 
-  const requestJoin = (commId) => {
+  const requestJoin = (commId, optionalMessage = '') => {
     if (!currentUser) return { success: false };
+    const requestObject = { userId: currentUser.id, message: optionalMessage, timestamp: new Date().toISOString() };
     const updated = communities.map(c => {
-      if (c.id === commId && !c.joinRequests?.includes(currentUser.id)) {
-        return { ...c, joinRequests: [...(c.joinRequests || []), currentUser.id] };
+      const hasRequested = c.joinRequests?.some(req => typeof req === 'object' ? req.userId === currentUser.id : req === currentUser.id);
+      if (c.id === commId && !hasRequested) {
+        return { ...c, joinRequests: [...(c.joinRequests || []), requestObject] };
       }
       return c;
     });

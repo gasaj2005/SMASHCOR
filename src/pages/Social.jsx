@@ -33,6 +33,8 @@ export default function Social() {
   const [activeChat, setActiveChat] = useState(null);
   const [chatMessage, setChatMessage] = useState('');
   const [showCommInfo, setShowCommInfo] = useState(false);
+  const [joinCommModal, setJoinCommModal] = useState(null);
+  const [joinMessage, setJoinMessage] = useState('');
   const chatScrollRef = useRef(null);
 
   // Form state
@@ -48,10 +50,11 @@ export default function Social() {
   // -- Helpers Amigos --
   const myFriends = globalUsers.filter(u => friendsIds.includes(u.id));
   const pendingUsers = globalUsers.filter(u => friendRequests.includes(u.id));
+  const sq = searchQuery.replace('@', '').toLowerCase();
   const searchResults = globalUsers.filter(u => 
     u.id !== currentUser?.id && 
     !friendsIds.includes(u.id) &&
-    u.username && u.username.toLowerCase().includes(searchQuery.toLowerCase())
+    u.username && u.username.toLowerCase().includes(sq)
   );
 
   // -- Helpers Comunidades --
@@ -114,7 +117,7 @@ export default function Social() {
   // ── RENDER DE CHAT AISLADO ──
   if (activeChat && currentChatComm) {
     return (
-      <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="fixed inset-0 z-40 bg-dark-bg flex flex-col pb-[72px]">
+      <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="fixed inset-0 z-40 bg-dark-bg flex flex-col pb-[72px] mx-auto w-full max-w-md shadow-2xl border-x border-dark-border/50">
         {/* Header Chat */}
         <div 
           className="bg-dark-card border-b border-dark-border p-4 flex items-center shadow-lg pt-safe select-none cursor-pointer hover:bg-dark-card/80 transition"
@@ -415,7 +418,7 @@ export default function Social() {
                         Comunidad Llena
                       </button>
                     ) : c.isPrivate ? (
-                      <button onClick={() => requestJoin(c.id)} className="w-full py-2.5 rounded-xl bg-transparent border-2 border-brand/50 text-brand text-xs font-bold hover:bg-brand/10 transition">
+                      <button onClick={() => setJoinCommModal(c.id)} className="w-full py-2.5 rounded-xl bg-transparent border-2 border-brand/50 text-brand text-xs font-bold hover:bg-brand/10 transition">
                         Solicitar Unión
                       </button>
                     ) : (
@@ -481,6 +484,60 @@ export default function Social() {
           )}
         </motion.div>
       )}
+
+      {/* Modal de Solicitud de Unión */}
+      <AnimatePresence>
+        {joinCommModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => { setJoinCommModal(null); setJoinMessage(''); }}
+            />
+            <motion.div
+              initial={{ y: 20, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 20, opacity: 0, scale: 0.95 }}
+              className="bg-dark-card border border-dark-border w-full max-w-sm rounded-[2rem] p-6 z-10 shadow-2xl relative"
+            >
+              <h3 className="text-xl font-black text-white mb-2 text-center">Solicitar Unión</h3>
+              <p className="text-sm text-slate-400 mb-5 text-center">
+                Esta es una comunidad privada.
+              </p>
+              <form onSubmit={(e) => { 
+                e.preventDefault(); 
+                requestJoin(joinCommModal, joinMessage); 
+                setJoinCommModal(null); 
+                setJoinMessage(''); 
+              }}>
+                <label className="text-[11px] text-brand font-bold uppercase tracking-widest block mb-2">Mensaje (Opcional)</label>
+                <textarea
+                  rows="3"
+                  className="w-full bg-dark-bg border border-dark-border rounded-xl p-3 text-white text-sm focus:border-brand outline-none resize-none mb-4"
+                  placeholder="¿Por qué quieres unirte a esta comunidad?"
+                  value={joinMessage}
+                  onChange={(e) => setJoinMessage(e.target.value)}
+                />
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { setJoinCommModal(null); setJoinMessage(''); }}
+                    className="w-1/2 py-3 rounded-xl font-bold bg-dark-bg text-white border border-dark-border hover:bg-slate-800 transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="w-1/2 py-3 rounded-xl font-black bg-brand text-dark-bg hover:bg-brand-hover transition shadow-md"
+                  >
+                    Enviar
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
