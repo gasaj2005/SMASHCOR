@@ -120,6 +120,22 @@ export const SocialProvider = ({ children }) => {
     return { success: true };
   };
 
+  const leaveCommunity = (commId) => {
+    if (!currentUser) return { success: false };
+    const updated = communities.map(c => {
+      if (c.id === commId && c.membersIds.includes(currentUser.id)) {
+        return {
+          ...c,
+          membersIds: c.membersIds.filter(id => id !== currentUser.id),
+          membersCount: Math.max(0, c.membersCount - 1)
+        };
+      }
+      return c;
+    });
+    persistCommunities(updated);
+    return { success: true };
+  };
+
   const requestJoin = (commId, optionalMessage = '') => {
     if (!currentUser) return { success: false };
     const requestObject = { userId: currentUser.id, message: optionalMessage, timestamp: new Date().toISOString() };
@@ -156,7 +172,7 @@ export const SocialProvider = ({ children }) => {
     <SocialContext.Provider value={{
       friendsIds, friendRequests, communities,
       sendFriendRequest, acceptRequest, rejectRequest,
-      createCommunity, joinCommunity, requestJoin, sendMessage
+      createCommunity, joinCommunity, leaveCommunity, requestJoin, sendMessage
     }}>
       {children}
     </SocialContext.Provider>
