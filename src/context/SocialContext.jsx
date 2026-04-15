@@ -22,15 +22,26 @@ export const SocialProvider = ({ children }) => {
     }
 
     try {
-      const sf = localStorage.getItem(`smashcor_friends_${currentUser.id}`);
-      setFriendsIds(sf ? JSON.parse(sf) : []);
+      let fIds = [];
+      try {
+        const sf = localStorage.getItem(`smashcor_friends_${currentUser.id}`);
+        fIds = sf ? JSON.parse(sf) : [];
+      } catch {}
+      setFriendsIds(fIds);
 
-      const sr = localStorage.getItem(`smashcor_requests_${currentUser.id}`);
-      // Llenamos algunas falsas si está vacío por testeo
-      setFriendRequests(sr ? JSON.parse(sr) : ['u4', 'u3']);
+      let fReqs = ['u4', 'u3'];
+      try {
+        const sr = localStorage.getItem(`smashcor_requests_${currentUser.id}`);
+        if(sr) fReqs = JSON.parse(sr);
+      } catch {}
+      setFriendRequests(fReqs);
 
-      const sc = localStorage.getItem('smashcor_communities');
-      setCommunities(sc ? JSON.parse(sc) : mockCommunities);
+      let comms = mockCommunities;
+      try {
+        const sc = localStorage.getItem('smashcor_communities');
+        if(sc) comms = JSON.parse(sc);
+      } catch {}
+      setCommunities(comms);
     } catch {
       setFriendsIds([]);
       setFriendRequests([]);
@@ -62,8 +73,11 @@ export const SocialProvider = ({ children }) => {
     
     // Leer bandeja del objetivo
     const targetKey = `smashcor_requests_${userId}`;
-    const existingRaw = localStorage.getItem(targetKey);
-    let targetRequests = existingRaw ? JSON.parse(existingRaw) : [];
+    let targetRequests = [];
+    try {
+      const existingRaw = localStorage.getItem(targetKey);
+      targetRequests = existingRaw ? JSON.parse(existingRaw) : [];
+    } catch {}
     
     // Añadir nuestro ID si no está ya
     if (!targetRequests.includes(currentUser.id)) {

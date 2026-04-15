@@ -21,38 +21,37 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem('smashcor_currentUser');
-      const storedUsers = localStorage.getItem('smashcor_users');
-      const storedRooms = localStorage.getItem('smashcor_rooms');
-
       // ── Usuarios ──
-      if (!storedUsers) {
-        const initialMockUser = { ...mockUser, password: '123' };
-        localStorage.setItem('smashcor_users', JSON.stringify([initialMockUser]));
-      }
+      try {
+        const storedUsers = localStorage.getItem('smashcor_users');
+        if (!storedUsers) {
+          const initialMockUser = { ...mockUser, password: '123' };
+          localStorage.setItem('smashcor_users', JSON.stringify([initialMockUser]));
+        }
+      } catch {}
 
-      if (storedUser && storedUser !== 'undefined') {
-        try {
+      try {
+        const storedUser = localStorage.getItem('smashcor_currentUser');
+        if (storedUser && storedUser !== 'undefined') {
           setCurrentUser(JSON.parse(storedUser));
-        } catch { /* ignora sesión corrupta */ }
-      }
+        }
+      } catch {}
 
       // ── Salas: siempre normalizar para sobrevivir formatos viejos ──
-      if (storedRooms) {
-        try {
+      try {
+        const storedRooms = localStorage.getItem('smashcor_rooms');
+        if (storedRooms) {
           const parsed = JSON.parse(storedRooms);
           const normalized = Array.isArray(parsed) ? parsed.map(normalizeRoom) : [];
           setRooms(normalized);
-          // Reescribir en localStorage ya normalizado
-          localStorage.setItem('smashcor_rooms', JSON.stringify(normalized));
-        } catch {
-          // localStorage corrupto: resetear a vacío
-          localStorage.setItem('smashcor_rooms', JSON.stringify([]));
+          try { localStorage.setItem('smashcor_rooms', JSON.stringify(normalized)); } catch {}
+        } else {
           setRooms([]);
+          try { localStorage.setItem('smashcor_rooms', JSON.stringify([])); } catch {}
         }
-      } else {
-        localStorage.setItem('smashcor_rooms', JSON.stringify([]));
+      } catch {
         setRooms([]);
+        try { localStorage.setItem('smashcor_rooms', JSON.stringify([])); } catch {}
       }
     } catch (e) {
       console.error('AuthContext init error:', e);
