@@ -48,20 +48,20 @@ export default function Social() {
   }, [activeChat, communities]);
 
   // -- Helpers Amigos --
-  const myFriends = globalUsers.filter(u => friendsIds.includes(u.id));
-  const pendingUsers = globalUsers.filter(u => friendRequests.includes(u.id));
-  const sq = searchQuery.replace('@', '').toLowerCase();
+  const myFriends = globalUsers.filter(u => friendsIds?.includes(u.id));
+  const pendingUsers = globalUsers.filter(u => friendRequests?.includes(u.id));
+  const sq = searchQuery?.replace('@', '').toLowerCase() || '';
   const searchResults = globalUsers.filter(u => 
     u.id !== currentUser?.id && 
-    !friendsIds.includes(u.id) &&
+    !friendsIds?.includes(u.id) &&
     u.username && u.username.toLowerCase().includes(sq)
   );
 
   // -- Helpers Comunidades --
-  const myCommunities = communities.filter(c => c.membersIds?.includes(currentUser?.id));
-  const exploreComms = communities.filter(c => !c.membersIds?.includes(currentUser?.id));
+  const myCommunities = communities?.filter(c => c?.membersIds?.includes(currentUser?.id)) || [];
+  const exploreComms = communities?.filter(c => !c?.membersIds?.includes(currentUser?.id)) || [];
   
-  const currentChatComm = activeChat ? communities.find(c => c.id === activeChat) : null;
+  const currentChatComm = activeChat ? communities?.find(c => c.id === activeChat) : null;
 
   // -- Lógica de Compresión de Imagen por Canvas --
   const handleImageUpload = (e) => {

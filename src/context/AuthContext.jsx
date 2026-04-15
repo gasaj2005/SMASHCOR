@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
   const login = (username, password) => {
     try {
       const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
-      const user = users.find(u => u.username === username && u.password === password);
+      const user = users?.find(u => u?.username === username && u?.password === password);
       if (user) {
         setCurrentUser(user);
         localStorage.setItem('smashcor_currentUser', JSON.stringify(user));
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }) => {
   const register = (data) => {
     try {
       const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
-      if (users.find(u => u.username === data.username)) {
+      if (users?.find(u => u?.username === data.username)) {
         return { success: false, message: 'El nombre de usuario ya está en uso' };
       }
       const newUser = {
@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
       const updatedUser = { ...currentUser, ...data };
-      const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
+      const updatedUsers = users?.map(u => u?.id === currentUser?.id ? updatedUser : u) || [];
       localStorage.setItem('smashcor_users', JSON.stringify(updatedUsers));
       setCurrentUser(updatedUser);
       localStorage.setItem('smashcor_currentUser', JSON.stringify(updatedUser));
@@ -120,7 +120,7 @@ export const AuthProvider = ({ children }) => {
     if (!currentUser) return;
     try {
       const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
-      const updatedUsers = users.filter(u => u.id !== currentUser.id);
+      const updatedUsers = users?.filter(u => u?.id !== currentUser?.id) || [];
       localStorage.setItem('smashcor_users', JSON.stringify(updatedUsers));
       setCurrentUser(null);
       localStorage.removeItem('smashcor_currentUser');
