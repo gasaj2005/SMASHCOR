@@ -117,7 +117,7 @@ export default function Social() {
   // ── RENDER DE CHAT AISLADO ──
   if (activeChat && currentChatComm) {
     return (
-      <div className="flex flex-col h-[100dvh] bg-gray-900 w-full max-w-md mx-auto relative">
+      <div className="flex flex-col h-[100dvh] overflow-hidden bg-gray-900 w-full max-w-md mx-auto relative">
         {/* Contenedor principal: Ocupa el 100% de la pantalla del móvil, sin scroll externo */}
         
         {/* 1. CABECERA (Fija arriba) */}
@@ -207,6 +207,21 @@ export default function Social() {
               <h2 className="text-2xl font-bold text-white">{currentChatComm.name}</h2>
               <p className="text-gray-400 mt-2">{currentChatComm.description || "Sin descripción."}</p>
               <p className="text-lime-400 mt-4 font-bold">{currentChatComm.membersIds?.length} Miembros</p>
+              
+              <div className="mt-4 max-h-40 overflow-y-auto space-y-2 text-left bg-gray-900/50 p-3 rounded-lg border border-gray-700">
+                {currentChatComm.membersIds?.map(memberId => {
+                  const member = globalUsers.find(u => u.id === memberId) || { id: memberId, name: 'Usuario' };
+                  const isLeader = memberId === currentChatComm.leaderId;
+                  return (
+                    <div key={memberId} className="flex items-center gap-2 p-1">
+                      <img src={member.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${memberId}&backgroundColor=93C572`} alt="avatar" className="w-8 h-8 rounded-full object-cover bg-gray-600" />
+                      <span className="text-white text-sm font-medium">
+                        {member.name} {isLeader && <span className="text-lime-500 font-bold text-xs ml-1">(Líder)</span>}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
               
               <button onClick={() => setShowCommInfo(false)} className="mt-6 w-full bg-gray-700 text-white py-2 rounded-lg font-bold">
                 Cerrar
