@@ -117,7 +117,7 @@ export default function Social() {
   // ── RENDER DE CHAT AISLADO ──
   if (activeChat && currentChatComm) {
     return (
-      <div className="flex flex-col h-[100dvh] overflow-hidden bg-gray-900 w-full max-w-md mx-auto relative">
+      <div className="fixed inset-0 z-40 flex flex-col h-[100dvh] overflow-hidden bg-gray-900 w-full max-w-md mx-auto pt-[73px] pb-20">
         {/* Contenedor principal: Ocupa el 100% de la pantalla del móvil, sin scroll externo */}
         
         {/* 1. CABECERA (Fija arriba) */}
