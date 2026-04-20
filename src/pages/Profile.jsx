@@ -60,8 +60,8 @@ export default function Profile() {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
 
-          // WebP preserves transparency and compresses better
-          const compressedBase64 = canvas.toDataURL('image/webp', 0.7);
+          // Base64 export with 0.7 quality
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
           resolve(compressedBase64);
         };
         img.onerror = (err) => reject(err);
@@ -188,7 +188,7 @@ export default function Profile() {
           <div className="bg-dark-card border border-dark-border rounded-xl p-5 space-y-4 shadow-lg">
             <h3 className="text-sm font-bold text-brand border-b border-dark-border/50 pb-2 mb-3">Equipamiento Padel</h3>
             <div>
-              <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Modelo de Pala</label>
+              <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Nombre de la Pala</label>
               <input 
                 type="text" 
                 value={racketModel} 
@@ -330,7 +330,14 @@ export default function Profile() {
           </div>
 
           {/* Configuración Peligrosa */}
-          <div className="pt-6 pb-4">
+          <div className="pt-6 pb-4 space-y-3">
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 bg-dark-card text-slate-300 border border-dark-border font-bold p-3.5 rounded-xl hover:bg-slate-800 hover:text-white transition-all shadow-sm"
+            >
+              <LogOut size={18} />
+              <span className="text-sm">Cerrar Sesión</span>
+            </button>
             <button 
               onClick={handleDeleteAccount}
               className="w-full flex items-center justify-center gap-2 bg-red-500/5 text-red-500 border border-red-500/20 font-bold p-3.5 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"
