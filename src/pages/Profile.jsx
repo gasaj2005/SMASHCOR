@@ -9,7 +9,9 @@ export default function Profile() {
   const navigate = useNavigate();
   
   const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState(currentUser?.name || '');
   const [username, setUsername] = useState(currentUser?.username || '');
+  const [birthDate, setBirthDate] = useState(currentUser?.birthDate || '');
   const [racketModel, setRacketModel] = useState(currentUser?.racketModel || '');
   
   const [avatarPreview, setAvatarPreview] = useState(currentUser?.avatar || '');
@@ -100,7 +102,9 @@ export default function Profile() {
     }
 
     updateProfile({
+      name,
       username,
+      birthDate,
       racketModel,
       avatar: newAvatar,
       racketPhoto: newRacketPhoto
@@ -109,6 +113,7 @@ export default function Profile() {
     setAvatarFile(null);
     setRacketFile(null);
     setIsEditing(false);
+    alert('Perfil actualizado con éxito');
   };
 
   if (!currentUser) return null;
@@ -148,6 +153,16 @@ export default function Profile() {
           <div className="bg-dark-card border border-dark-border rounded-xl p-5 space-y-4 shadow-lg">
             <h3 className="text-sm font-bold text-slate-300 border-b border-dark-border pb-2 mb-3">Datos Personales</h3>
             <div>
+              <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Nombre Completo</label>
+              <input 
+                type="text" 
+                value={name} 
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-dark-bg border border-dark-border rounded-xl p-3.5 text-white text-sm focus:outline-none focus:border-brand transition-colors"
+                placeholder="Tu nombre real"
+              />
+            </div>
+            <div>
               <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Nombre de Usuario (@)</label>
               <input 
                 type="text" 
@@ -155,6 +170,16 @@ export default function Profile() {
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full bg-dark-bg border border-dark-border rounded-xl p-3.5 text-white text-sm focus:outline-none focus:border-brand transition-colors"
                 placeholder="Tu usuario"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Fecha de Nacimiento</label>
+              <input 
+                type="date" 
+                value={birthDate} 
+                onChange={(e) => setBirthDate(e.target.value)}
+                className="w-full bg-dark-bg border border-dark-border rounded-xl p-3.5 text-white text-sm focus:outline-none focus:border-brand transition-colors"
+                style={{ colorScheme: 'dark' }}
               />
             </div>
           </div>
@@ -204,7 +229,9 @@ export default function Profile() {
                 setIsEditing(false);
                 setAvatarPreview(currentUser?.avatar || '');
                 setRacketPreview(currentUser?.racketPhoto || '');
+                setName(currentUser?.name || '');
                 setUsername(currentUser?.username || '');
+                setBirthDate(currentUser?.birthDate || '');
                 setRacketModel(currentUser?.racketModel || '');
               }} 
               className="w-1/3 py-3.5 rounded-xl font-bold bg-dark-bg text-white border border-dark-border hover:bg-slate-800 transition"
