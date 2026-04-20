@@ -258,7 +258,9 @@ export default function Profile() {
               onClick={handleLogout}
               className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10 w-10 h-10 flex items-center justify-center bg-dark-bg/50 rounded-full backdrop-blur-md"
             >
-              <LogOut size={18} className="pointer-events-none" />
+              <span className="pointer-events-none flex items-center justify-center">
+                <LogOut size={18} />
+              </span>
             </button>
             
             <div className="relative z-10">
@@ -341,7 +343,9 @@ export default function Profile() {
               onClick={handleLogout}
               className="w-full flex items-center justify-center gap-2 bg-dark-card text-slate-300 border border-dark-border font-bold p-3.5 rounded-xl hover:bg-slate-800 hover:text-white transition-all shadow-sm"
             >
-              <LogOut size={18} className="pointer-events-none" />
+              <span className="pointer-events-none flex items-center justify-center">
+                <LogOut size={18} />
+              </span>
               <span className="text-sm pointer-events-none">Cerrar Sesión</span>
             </button>
             <button 
