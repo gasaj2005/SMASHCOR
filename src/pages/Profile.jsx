@@ -21,7 +21,13 @@ export default function Profile() {
   const [racketFile, setRacketFile] = useState(null);
 
   const handleLogout = () => {
-    logout();
+    // 1. Limpiamos la sesión del usuario en localStorage
+    localStorage.removeItem('smashcor_currentUser'); 
+    
+    // 2. Limpiamos el estado global (si aplica)
+    if (logout) logout();
+    
+    // 3. Redirigimos forzosamente a la pantalla de Login o Inicio
     navigate('/login');
   };
 
