@@ -28,7 +28,7 @@ export default function Profile() {
     if (logout) logout();
     
     // 3. Redirigimos forzosamente a la pantalla de Login o Inicio
-    navigate('/login');
+    navigate('/');
   };
 
   const handleDeleteAccount = () => {
