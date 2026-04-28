@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useSocial } from '../context/SocialContext';
 import { globalUsers } from '../data/mockData';
-import { Users, UserPlus, Search, Check, X, ShieldAlert, MessageCircle, Send, Plus, Globe, Lock, ImageIcon, ArrowLeft } from 'lucide-react';
+import { Users, UserPlus, Search, Check, X, ShieldAlert, MessageCircle, Send, Plus, Globe, Lock, ImageIcon, ArrowLeft, Trophy, Target } from 'lucide-react';
 import { format } from 'date-fns';
 
 const TABS = [
@@ -35,6 +35,7 @@ export default function Social() {
   const [showCommInfo, setShowCommInfo] = useState(false);
   const [joinCommModal, setJoinCommModal] = useState(null);
   const [joinMessage, setJoinMessage] = useState('');
+  const [friendModal, setFriendModal] = useState(null);
   const chatScrollRef = useRef(null);
 
   // Form state
@@ -338,13 +339,13 @@ export default function Social() {
                 </div>
               ) : (
                 myFriends.map(friend => (
-                  <div key={friend.id} className="flex items-center p-3 bg-dark-card border border-dark-border rounded-xl shadow-sm">
-                    <img src={friend.avatar} alt={friend.name} className="w-12 h-12 rounded-full mr-4 border border-dark-border/50" />
+                  <button key={friend.id} onClick={() => setFriendModal(friend)} className="w-full flex items-center p-3 bg-dark-card border border-dark-border rounded-xl shadow-sm text-left hover:border-brand/50 transition cursor-pointer">
+                    <img src={friend.avatar} alt={friend.name} className="w-12 h-12 rounded-full mr-4 border border-dark-border/50 object-cover bg-slate-800" />
                     <div>
                       <p className="font-bold text-white text-sm">{friend.name}</p>
                       <p className="text-[11px] text-brand font-medium tracking-wide">{friend.division}ª División {friend.subdivision}</p>
                     </div>
-                  </div>
+                  </button>
                 ))
               )}
             </div>
@@ -536,6 +537,76 @@ export default function Social() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Perfil de Amigo */}
+      <AnimatePresence>
+        {friendModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setFriendModal(null)}
+            />
+            <motion.div
+              initial={{ y: 20, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 20, opacity: 0, scale: 0.95 }}
+              className="bg-dark-card border border-dark-border w-full max-w-sm rounded-[2rem] p-6 z-10 shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-brand/20 to-transparent"></div>
+              
+              <div className="relative z-10 text-center mb-5">
+                <img src={friendModal.avatar} alt="avatar" className="w-24 h-24 mx-auto rounded-full border-4 border-dark-bg shadow-lg object-cover bg-slate-800 mb-3" />
+                <h2 className="text-2xl font-black text-white leading-tight">{friendModal.name} <span className="text-sm font-medium text-slate-400">({friendModal.age || 25} años)</span></h2>
+                <p className="text-brand font-bold text-sm">@{friendModal.username || friendModal.name.toLowerCase().replace(/\s+/g, '')}</p>
+                <div className="inline-flex items-center gap-2 bg-dark-bg text-white px-4 py-1.5 rounded-full text-xs font-bold border border-dark-border mt-3 shadow-sm">
+                  Nivel <span className="text-brand">{friendModal.division}</span> - {friendModal.subdivision}
+                </div>
+              </div>
+              
+              <div className="relative z-10 space-y-4">
+                {friendModal.bio && (
+                  <p className="text-sm text-slate-300 text-center px-4 italic bg-dark-bg p-3 rounded-xl border border-dark-border">
+                    "{friendModal.bio}"
+                  </p>
+                )}
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-dark-bg border border-dark-border p-3 rounded-xl text-center flex flex-col items-center shadow-sm">
+                    <Trophy size={18} className="text-yellow-400 mb-1" />
+                    <span className="block text-xl font-black text-white">{friendModal.points || 0}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Puntos</span>
+                  </div>
+                  <div className="bg-dark-bg border border-dark-border p-3 rounded-xl flex flex-col items-center justify-center shadow-sm">
+                    <span className="block text-xl font-black text-white">45</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase mt-1">Partidos</span>
+                  </div>
+                </div>
+
+                <div className="bg-dark-bg border border-dark-border rounded-xl p-3 flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <Target size={20} className="text-brand" />
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">Pala Equipada</p>
+                      <p className="text-sm font-bold text-white">{friendModal.racketModel || 'Sin especificar'}</p>
+                    </div>
+                  </div>
+                  {friendModal.racketPhoto ? (
+                    <img src={friendModal.racketPhoto} className="w-10 h-10 object-contain bg-white rounded-lg p-1" />
+                  ) : <div className="text-2xl">🎾</div>}
+                </div>
+
+                <button
+                  onClick={() => setFriendModal(null)}
+                  className="w-full py-3.5 rounded-xl font-black bg-brand hover:bg-brand-hover text-dark-bg transition shadow-md mt-2"
+                >
+                  Cerrar
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

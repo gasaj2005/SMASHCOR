@@ -91,6 +91,7 @@ export const AuthProvider = ({ children }) => {
         points: 0, racketModel: 'Sin especificar', racketPhoto: '',
         bio: '¡Nuevo jugador en SmashCor!', ...data,
         id: 'u' + Math.floor(Math.random() * 10000),
+        isFirstLogin: true,
       };
       const updatedUsers = [...users, newUser];
       localStorage.setItem('smashcor_users', JSON.stringify(updatedUsers));

@@ -11,6 +11,7 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(currentUser?.name || '');
   const [username, setUsername] = useState(currentUser?.username || '');
+  const [bio, setBio] = useState(currentUser?.bio || '');
   const [birthDate, setBirthDate] = useState(currentUser?.birthDate || '');
   const [racketModel, setRacketModel] = useState(currentUser?.racketModel || '');
   
@@ -110,6 +111,7 @@ export default function Profile() {
     updateProfile({
       name,
       username,
+      bio,
       birthDate,
       racketModel,
       avatar: newAvatar,
@@ -179,6 +181,16 @@ export default function Profile() {
               />
             </div>
             <div>
+              <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Descripción (Bio)</label>
+              <textarea 
+                rows="3"
+                value={bio} 
+                onChange={(e) => setBio(e.target.value)}
+                className="w-full bg-dark-bg border border-dark-border rounded-xl p-3.5 text-white text-sm focus:outline-none focus:border-brand transition-colors resize-none"
+                placeholder="¡Hola! Soy un jugador de pádel apasionado..."
+              />
+            </div>
+            <div>
               <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Fecha de Nacimiento</label>
               <input 
                 type="date" 
@@ -237,6 +249,7 @@ export default function Profile() {
                 setRacketPreview(currentUser?.racketPhoto || '');
                 setName(currentUser?.name || '');
                 setUsername(currentUser?.username || '');
+                setBio(currentUser?.bio || '');
                 setBirthDate(currentUser?.birthDate || '');
                 setRacketModel(currentUser?.racketModel || '');
               }} 
@@ -254,13 +267,6 @@ export default function Profile() {
           {/* Profile Card */}
           <div className="bg-dark-card border border-dark-border rounded-2xl p-6 text-center shadow-[0_4px_20px_rgba(0,0,0,0.3)] relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-brand/20 to-transparent"></div>
-            <button 
-              onClick={handleLogout}
-              className="absolute top-4 right-4 text-slate-300 hover:text-white transition-all z-10 flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/90 rounded-full backdrop-blur-md cursor-pointer px-4 py-2 border border-slate-700/50 shadow-sm"
-            >
-              <LogOut size={16} className="pointer-events-none" />
-              <span className="text-sm font-bold pointer-events-none">Salir</span>
-            </button>
             
             <div className="relative z-10">
               <img src={currentUser.avatar} alt="avatar" className="w-24 h-24 mx-auto rounded-full border-4 border-dark-bg shadow-[0_0_15px_rgba(147,197,114,0.4)] mb-3 object-cover bg-slate-800" />
