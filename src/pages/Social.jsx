@@ -569,9 +569,13 @@ export default function Social() {
               </div>
               
               <div className="relative z-10 space-y-4">
-                {friendModal.bio && (
+                {(friendModal.bio || friendModal.description) ? (
                   <p className="text-sm text-slate-300 text-center px-4 italic bg-dark-bg p-3 rounded-xl border border-dark-border">
-                    "{friendModal.bio}"
+                    "{friendModal.bio || friendModal.description}"
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-500 text-center px-4 italic bg-dark-bg p-3 rounded-xl border border-dark-border">
+                    Sin descripción
                   </p>
                 )}
                 
