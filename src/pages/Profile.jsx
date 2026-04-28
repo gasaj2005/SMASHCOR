@@ -256,9 +256,10 @@ export default function Profile() {
             <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-brand/20 to-transparent"></div>
             <button 
               onClick={handleLogout}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10 w-10 h-10 flex items-center justify-center bg-dark-bg/50 rounded-full backdrop-blur-md cursor-pointer"
+              className="absolute top-4 right-4 text-slate-300 hover:text-white transition-all z-10 flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/90 rounded-full backdrop-blur-md cursor-pointer px-4 py-2 border border-slate-700/50 shadow-sm"
             >
-              <LogOut size={18} className="pointer-events-none" />
+              <LogOut size={16} className="pointer-events-none" />
+              <span className="text-sm font-bold pointer-events-none">Salir</span>
             </button>
             
             <div className="relative z-10">
