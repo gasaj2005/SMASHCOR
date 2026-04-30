@@ -1,11 +1,13 @@
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, ChevronLeft, Calendar as CalendarIcon, Trophy, Target, Edit3, Trash2, Camera } from 'lucide-react';
-import { userHistory } from '../data/mockData';
+import { LogOut, ChevronLeft, Calendar as CalendarIcon, Trophy, Target, Edit3, Trash2, Camera, X, Crown } from 'lucide-react';
 import { useState } from 'react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Profile() {
-  const { currentUser, logout, updateProfile, deleteAccount } = useAuth();
+  const { currentUser, logout, updateProfile, deleteAccount, rooms } = useAuth();
   const navigate = useNavigate();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -21,14 +23,16 @@ export default function Profile() {
   const [racketPreview, setRacketPreview] = useState(currentUser?.racketPhoto || '');
   const [racketFile, setRacketFile] = useState(null);
 
+  const [selectedHistoryMatch, setSelectedHistoryMatch] = useState(null);
+
+  const safeRooms = Array.isArray(rooms) ? rooms : [];
+  const historyMatches = safeRooms.filter(r => 
+    r.status === 'completed' && Array.isArray(r.players) && r.players.some(p => p.id === currentUser?.id)
+  ).sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+
   const handleLogout = () => {
-    // 1. Limpiamos la sesión del usuario en localStorage
     localStorage.removeItem('smashcor_currentUser'); 
-    
-    // 2. Limpiamos el estado global (si aplica)
     if (logout) logout();
-    
-    // 3. Redirigimos forzosamente a la pantalla de Login o Inicio
     navigate('/');
   };
 
@@ -67,7 +71,6 @@ export default function Profile() {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Base64 export with 0.7 quality
           const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
           resolve(compressedBase64);
         };
@@ -145,7 +148,6 @@ export default function Profile() {
 
       {isEditing ? (
         <div className="p-4 space-y-6 animate-fade-in">
-          {/* Foto de Perfil */}
           <div className="bg-dark-card border border-dark-border rounded-xl p-5 text-center shadow-lg">
             <label className="relative inline-block cursor-pointer group">
               <img src={avatarPreview || currentUser.avatar} alt="Avatar" className="w-24 h-24 mx-auto rounded-full border-4 border-brand shadow-lg object-cover bg-slate-800" />
@@ -157,7 +159,6 @@ export default function Profile() {
             <p className="text-xs text-slate-400 mt-4 font-medium uppercase tracking-wider">Toca para cambiar foto</p>
           </div>
 
-          {/* Datos Personales */}
           <div className="bg-dark-card border border-dark-border rounded-xl p-5 space-y-4 shadow-lg">
             <h3 className="text-sm font-bold text-slate-300 border-b border-dark-border pb-2 mb-3">Datos Personales</h3>
             <div>
@@ -202,7 +203,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Equipamiento */}
           <div className="bg-dark-card border border-dark-border rounded-xl p-5 space-y-4 shadow-lg">
             <h3 className="text-sm font-bold text-brand border-b border-dark-border/50 pb-2 mb-3">Equipamiento Padel</h3>
             <div>
@@ -264,7 +264,6 @@ export default function Profile() {
         </div>
       ) : (
         <div className="p-4 space-y-6 animate-fade-in">
-          {/* Profile Card */}
           <div className="bg-dark-card border border-dark-border rounded-2xl p-6 text-center shadow-[0_4px_20px_rgba(0,0,0,0.3)] relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-brand/20 to-transparent"></div>
             
@@ -283,7 +282,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Stats */}
           <div>
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
               <Trophy className="text-yellow-400" size={16}/> Estadísticas
@@ -294,13 +292,12 @@ export default function Profile() {
                 <span className="text-[10px] text-brand font-bold uppercase tracking-widest">Puntos</span>
               </div>
               <div className="bg-dark-card border border-dark-border p-4 rounded-2xl text-center shadow-sm">
-                <span className="block text-3xl font-black text-white mb-0.5">45</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Partidos</span>
+                <span className="block text-3xl font-black text-white mb-0.5">{historyMatches.length}</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Partidos Fin.</span>
               </div>
             </div>
           </div>
 
-          {/* Pala (Equipamiento) */}
           <div>
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
               <Target className="text-brand" size={16}/> Tu Arma
@@ -322,27 +319,54 @@ export default function Profile() {
           {/* Historial */}
           <div>
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <CalendarIcon className="text-blue-400" size={16}/> Últimos Partidos
+              <CalendarIcon className="text-blue-400" size={16}/> Historial de Partidos
             </h3>
             <div className="space-y-3">
-              {userHistory.map(history => (
-                <div key={history.id} className="bg-dark-card border border-dark-border rounded-2xl p-4 flex justify-between items-center shadow-sm">
-                  <div>
-                    <p className={`font-bold text-sm ${history.result.includes('Victoria') ? 'text-brand' : 'text-slate-300'}`}>
-                      {history.result}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">{history.date} • {history.location}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="block font-black text-white text-base">+{history.pointsEarned}</span>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">pts</span>
-                  </div>
+              {historyMatches.length === 0 ? (
+                <div className="text-center text-slate-500 py-6 text-sm bg-dark-card border border-dark-border rounded-xl">
+                  Aún no tienes partidos finalizados.
                 </div>
-              ))}
+              ) : (
+                historyMatches.map(match => {
+                  const didIWin = match.scoreData && match.scoreData.winner !== 0 && (
+                    (match.scoreData.winner === 1 && (match.players[0]?.id === currentUser.id || match.players[2]?.id === currentUser.id)) ||
+                    (match.scoreData.winner === 2 && (match.players[1]?.id === currentUser.id || match.players[3]?.id === currentUser.id))
+                  );
+                  const isDraw = !match.scoreData || match.scoreData.winner === 0;
+
+                  return (
+                    <div 
+                      key={match.id} 
+                      onClick={() => setSelectedHistoryMatch(match)}
+                      className="bg-dark-card border border-dark-border rounded-2xl p-4 flex justify-between items-center shadow-sm cursor-pointer hover:border-brand transition-colors"
+                    >
+                      <div>
+                        <p className={`font-bold text-sm ${didIWin ? 'text-brand' : (isDraw ? 'text-slate-300' : 'text-red-400')}`}>
+                          {didIWin ? 'Victoria' : (isDraw ? 'Amistoso / Sin Result.' : 'Derrota')}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {match.datetime ? format(new Date(match.datetime), "dd MMM", { locale: es }) : 'Fecha inst.'} • {match.location || 'Pista'}
+                        </p>
+                      </div>
+                      <div className="text-right flex flex-col items-end">
+                        {match.scoreData && match.scoreData.sets?.length > 0 ? (
+                          <div className="flex gap-1">
+                            {match.scoreData.sets.map((set, i) => (
+                              <span key={i} className="text-xs font-bold bg-dark-bg px-1.5 py-0.5 rounded border border-dark-border text-white">{set}</span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs font-bold text-slate-500">-</span>
+                        )}
+                        <span className="text-[10px] text-brand/80 mt-1.5 flex items-center gap-1 uppercase tracking-wider font-bold">Pista →</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
-          {/* Configuración Peligrosa */}
           <div className="pt-6 pb-4 space-y-3">
             <button 
               onClick={handleLogout}
@@ -363,6 +387,129 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      {/* VISUALIZADOR DE PISTA (MODAL) */}
+      <AnimatePresence>
+        {selectedHistoryMatch && (
+          <MatchHistoryDetails 
+            match={selectedHistoryMatch} 
+            onClose={() => setSelectedHistoryMatch(null)} 
+            currentUser={currentUser}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── SUBCOMPONENTE VISUALIZADOR PISTA ──
+function MatchHistoryDetails({ match, onClose, currentUser }) {
+  const players = Array.isArray(match?.players) ? match.players : [];
+  
+  // Posiciones: Team 1 (left) = left-top, left-bottom (o indices 0, 2)
+  // Team 2 (right) = right-top, right-bottom (o indices 1, 3)
+  const team1 = [
+    players.find(p => p.courtPosition === 'left-top') || players[0],
+    players.find(p => p.courtPosition === 'left-bottom') || players[2],
+  ].filter(Boolean);
+
+  const team2 = [
+    players.find(p => p.courtPosition === 'right-top') || players[1],
+    players.find(p => p.courtPosition === 'right-bottom') || players[3],
+  ].filter(Boolean);
+
+  const scoreData = match.scoreData;
+  const isWinnerT1 = scoreData?.winner === 1;
+  const isWinnerT2 = scoreData?.winner === 2;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ y: 50, opacity: 0, scale: 0.95 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ y: 50, opacity: 0, scale: 0.95 }}
+        className="bg-dark-card border border-dark-border w-full max-w-lg rounded-[2rem] p-5 md:p-8 z-10 shadow-2xl relative overflow-hidden"
+      >
+        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white z-20 bg-dark-bg/50 rounded-full p-1 backdrop-blur-sm transition-colors">
+          <X size={24} />
+        </button>
+
+        <h3 className="text-xl font-black text-white text-center mb-1">Resultado Final</h3>
+        <p className="text-sm text-brand font-mono font-bold tracking-widest text-center mb-6">{match.name}</p>
+
+        {/* PISTA AZUL WPT */}
+        <div className="relative w-full aspect-[4/3] bg-blue-600 rounded-lg border-4 border-white shadow-inner overflow-hidden flex">
+          
+          {/* Línea Central (Red) */}
+          <div className="absolute top-0 bottom-0 left-1/2 w-1.5 -ml-[3px] bg-white opacity-80 shadow-[0_0_10px_rgba(255,255,255,0.5)] z-0"></div>
+
+          {/* Área de Saque Izquierda */}
+          <div className="absolute top-1/4 bottom-1/4 left-[15%] right-1/2 border-2 border-white/40 border-r-0 z-0"></div>
+          <div className="absolute top-1/2 left-[15%] right-1/2 h-0 border-t-2 border-white/40 z-0"></div>
+
+          {/* Área de Saque Derecha */}
+          <div className="absolute top-1/4 bottom-1/4 left-1/2 right-[15%] border-2 border-white/40 border-l-0 z-0"></div>
+          <div className="absolute top-1/2 left-1/2 right-[15%] h-0 border-t-2 border-white/40 z-0"></div>
+
+          {/* Equipo 1 (Izquierda) */}
+          <div className="flex-1 flex flex-col items-center justify-around py-4 z-10 relative">
+            {isWinnerT1 && (
+              <div className="absolute top-2 flex flex-col items-center animate-bounce text-yellow-400">
+                <Crown size={24} className="drop-shadow-md" />
+                <span className="text-[10px] font-black uppercase tracking-wider bg-black/50 px-2 py-0.5 rounded-full mt-1 text-white">Campeones</span>
+              </div>
+            )}
+            {team1.map((p, idx) => (
+              <div key={idx} className={`flex flex-col items-center ${isWinnerT1 ? 'mt-8' : ''}`}>
+                <img src={p?.avatar || 'https://via.placeholder.com/150'} className={`w-14 h-14 md:w-16 md:h-16 rounded-full border-4 ${isWinnerT1 ? 'border-yellow-400' : 'border-white'} shadow-lg object-cover bg-slate-800`} alt="P1" />
+                <span className="text-xs font-bold text-white bg-black/50 px-2 py-0.5 rounded-full mt-2 max-w-[80px] truncate text-center backdrop-blur-sm border border-white/10">
+                  {p?.username || 'Jugador'}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Equipo 2 (Derecha) */}
+          <div className="flex-1 flex flex-col items-center justify-around py-4 z-10 relative">
+            {isWinnerT2 && (
+              <div className="absolute top-2 flex flex-col items-center animate-bounce text-yellow-400">
+                <Crown size={24} className="drop-shadow-md" />
+                <span className="text-[10px] font-black uppercase tracking-wider bg-black/50 px-2 py-0.5 rounded-full mt-1 text-white">Campeones</span>
+              </div>
+            )}
+            {team2.map((p, idx) => (
+              <div key={idx} className={`flex flex-col items-center ${isWinnerT2 ? 'mt-8' : ''}`}>
+                <img src={p?.avatar || 'https://via.placeholder.com/150'} className={`w-14 h-14 md:w-16 md:h-16 rounded-full border-4 ${isWinnerT2 ? 'border-yellow-400' : 'border-white'} shadow-lg object-cover bg-slate-800`} alt="P2" />
+                <span className="text-xs font-bold text-white bg-black/50 px-2 py-0.5 rounded-full mt-2 max-w-[80px] truncate text-center backdrop-blur-sm border border-white/10">
+                  {p?.username || 'Jugador'}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Marcador Central */}
+          {scoreData && scoreData.sets && scoreData.sets.length > 0 && (
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-dark-bg/95 backdrop-blur-md border-2 border-brand px-4 py-2.5 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.8)] z-20 flex gap-2.5">
+              {scoreData.sets.map((set, i) => {
+                const [s1, s2] = set.split('-');
+                return (
+                  <div key={i} className="flex gap-1 items-center font-black text-lg">
+                    <span className={parseInt(s1) > parseInt(s2) ? 'text-white' : 'text-slate-500'}>{s1}</span>
+                    <span className="text-slate-600 text-sm">-</span>
+                    <span className={parseInt(s2) > parseInt(s1) ? 'text-white' : 'text-slate-500'}>{s2}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+      </motion.div>
     </div>
   );
 }

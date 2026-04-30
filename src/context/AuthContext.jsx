@@ -12,6 +12,7 @@ const normalizeRoom = (r) => ({
   roomCode: r.roomCode || ('PAD-' + r.id?.slice(-4).toUpperCase()) || 'PAD-????',
   isPrivate: r.isPrivate ?? false,
   creatorId: r.creatorId || (Array.isArray(r.players) && r.players[0]?.id) || 'unknown',
+  status: r.status || 'active',
 });
 
 export const AuthProvider = ({ children }) => {
@@ -224,6 +225,20 @@ export const AuthProvider = ({ children }) => {
     return { success: true };
   };
 
+  const finishMatch = (matchId, scoreData) => {
+    if (!currentUser || !matchId) return { success: false };
+    const safeRooms = Array.isArray(rooms) ? rooms : [];
+    const roomIndex = safeRooms.findIndex(r => r.id === matchId);
+    if (roomIndex === -1) return { success: false };
+    
+    const updatedRoom = { ...safeRooms[roomIndex], status: 'completed', scoreData };
+    const updatedRooms = [...safeRooms];
+    updatedRooms[roomIndex] = updatedRoom;
+    
+    persistRooms(updatedRooms);
+    return { success: true, room: updatedRoom };
+  };
+
   const addNotification = (userId, message, type = 'info', relatedId = null) => {
     try {
       const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
@@ -283,7 +298,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       currentUser, login, register, logout, updateProfile, deleteAccount, loading,
       rooms: Array.isArray(rooms) ? rooms : [],
-      addRoom, joinRoom, updatePlayerPosition, leaveRoom, deleteRoom,
+      addRoom, joinRoom, updatePlayerPosition, leaveRoom, deleteRoom, finishMatch,
       addNotification, markNotificationsAsRead
     }}>
       {children}

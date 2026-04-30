@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Clock, ShieldAlert, ArrowLeft, Plus, Globe, Lock, Users, Trash2, LogOut, AlertTriangle, X } from 'lucide-react';
+import { MapPin, Clock, ShieldAlert, ArrowLeft, Plus, Globe, Lock, Users, Trash2, LogOut, AlertTriangle, X, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { format, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -14,11 +14,13 @@ const TABS = [
 ];
 
 export default function Play() {
-  const { currentUser, rooms, addRoom, joinRoom, leaveRoom, deleteRoom, addNotification } = useAuth();
+  const { currentUser, rooms, addRoom, joinRoom, leaveRoom, deleteRoom, addNotification, finishMatch } = useAuth();
 
   const [activeTab, setActiveTab] = useState('my_matches');
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [finishMatchData, setFinishMatchData] = useState(null);
+  const [matchScore, setMatchScore] = useState([{ t1: '', t2: '' }, { t1: '', t2: '' }, { t1: '', t2: '' }]);
 
   const [joinCode, setJoinCode] = useState('');
   const [joinError, setJoinError] = useState('');
@@ -33,16 +35,14 @@ export default function Play() {
     isPrivate: false,
   });
 
-  // Null-safe array (si el contexto aún no cargó, rooms puede ser [])
   const safeRooms = Array.isArray(rooms) ? rooms : [];
 
-  // Mis Partidos: salas en las que está el usuario actual
   const myMatches = safeRooms.filter(r =>
-    Array.isArray(r?.players) && r.players.some(p => p.id === currentUser?.id)
+    r.status !== 'completed' && Array.isArray(r?.players) && r.players.some(p => p.id === currentUser?.id)
   );
 
-  // Partidos Disponibles: públicas con huecos donde el usuario NO está aún
   const publicRooms = safeRooms.filter(r =>
+    r.status !== 'completed' &&
     !r.isPrivate &&
     Array.isArray(r?.players) &&
     r.players.length < 4 &&
@@ -79,7 +79,6 @@ export default function Play() {
     if (!res || !res.success) {
       setJoinError(res?.message ?? 'Error al unirse');
     } else {
-      // Leer el room fresco desde rooms (ya actualizado por joinRoom)
       const freshRoom = safeRooms.find(r => r.id === (res.room?.id ?? roomId)) || res.room;
       setSelectedRoom(freshRoom);
 
@@ -89,7 +88,44 @@ export default function Play() {
     }
   };
 
-  // Vista de Pista Cenital
+  const openFinishMatch = (match) => {
+    setFinishMatchData(match);
+    setMatchScore([{ t1: '', t2: '' }, { t1: '', t2: '' }, { t1: '', t2: '' }]);
+  };
+
+  const submitFinishMatch = (withScore) => {
+    if (!finishMatchData) return;
+    
+    if (!withScore) {
+      finishMatch(finishMatchData.id, null);
+    } else {
+      let team1Sets = 0;
+      let team2Sets = 0;
+      const validSets = [];
+
+      matchScore.forEach(set => {
+        const t1 = parseInt(set.t1);
+        const t2 = parseInt(set.t2);
+        if (!isNaN(t1) && !isNaN(t2)) {
+          validSets.push(`${t1}-${t2}`);
+          if (t1 > t2) team1Sets++;
+          else if (t2 > t1) team2Sets++;
+        }
+      });
+
+      const scoreData = {
+        sets: validSets,
+        team1Sets,
+        team2Sets,
+        winner: team1Sets > team2Sets ? 1 : (team2Sets > team1Sets ? 2 : 0)
+      };
+
+      finishMatch(finishMatchData.id, scoreData);
+    }
+    
+    setFinishMatchData(null);
+  };
+
   if (selectedRoom) {
     const currentRoomState = rooms.find(r => r.id === selectedRoom.id) || selectedRoom;
     return (
@@ -107,7 +143,7 @@ export default function Play() {
               onClick={() => setConfirmAction({ type: 'delete', roomId: currentRoomState.id })}
               className="flex items-center text-red-500 hover:text-red-400 bg-red-500/10 px-3 py-2 rounded-xl text-sm font-bold border border-red-500/20 shadow-sm transition"
             >
-              <Trash2 size={16} className="mr-1.5" /> Eliminar Partido
+              <Trash2 size={16} className="mr-1.5" /> Eliminar
             </button>
           ) : (
             <button
@@ -121,7 +157,6 @@ export default function Play() {
 
         <PadelCourtUI match={currentRoomState} />
 
-        {/* MODAL DE CONFIRMACIÓN DE ACCIÓN */}
         <AnimatePresence>
           {confirmAction && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -144,8 +179,8 @@ export default function Play() {
                 </h3>
                 <p className="text-sm text-slate-400 mb-6">
                   {confirmAction.type === 'delete' 
-                    ? 'Esta acción borrará la sala por completo y expulsará a todos los jugadores. No se puede deshacer.'
-                    : 'Dejarás un hueco vacío en la pista. Podrás volver a unirte más tarde si hay espacio.'}
+                    ? 'Esta acción borrará la sala por completo y expulsará a todos los jugadores.'
+                    : 'Dejarás un hueco vacío en la pista. Podrás volver a unirte más tarde.'}
                 </p>
                 <div className="flex gap-3 w-full">
                   <button
@@ -178,10 +213,9 @@ export default function Play() {
   }
 
   return (
-    <div className="p-4 pb-28 min-h-screen">
+    <div className="p-4 pb-28 min-h-screen relative">
       <h2 className="text-2xl font-bold text-white mb-5">Partidos</h2>
 
-      {/* NAV TABS */}
       <div className="flex bg-dark-card rounded-xl p-1 mb-6 border border-dark-border shadow-sm gap-0.5">
         {TABS.map(tab => (
           <button
@@ -198,7 +232,6 @@ export default function Play() {
         ))}
       </div>
 
-      {/* ── MIS PARTIDOS ── */}
       {activeTab === 'my_matches' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
           {!myMatches || myMatches.length === 0 ? (
@@ -208,14 +241,19 @@ export default function Play() {
               <p className="text-sm">Crea uno o únete desde "Disponibles".</p>
             </div>
           ) : (
-            myMatches?.length > 0 && myMatches.map(match => (
-              <MatchCard key={match.id} match={match} onClick={() => setSelectedRoom(match)} />
+            myMatches.map(match => (
+              <MatchCard 
+                key={match.id} 
+                match={match} 
+                onClick={() => setSelectedRoom(match)} 
+                onFinish={() => openFinishMatch(match)}
+                isCreator={currentUser?.id === match.creatorId}
+              />
             ))
           )}
         </motion.div>
       )}
 
-      {/* ── PARTIDOS DISPONIBLES (PÚBLICOS) ── */}
       {activeTab === 'public' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
           {!publicRooms || publicRooms.length === 0 ? (
@@ -225,14 +263,13 @@ export default function Play() {
               <p className="text-sm">¡Sé el primero en crear uno público!</p>
             </div>
           ) : (
-            publicRooms?.length > 0 && publicRooms.map(match => (
+            publicRooms.map(match => (
               <PublicMatchCard key={match.id} match={match} onJoin={() => handleJoinPublic(match.id)} />
             ))
           )}
         </motion.div>
       )}
 
-      {/* ── UNIRSE POR CÓDIGO ── */}
       {activeTab === 'join' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-dark-card border border-dark-border p-6 rounded-2xl shadow-lg text-center py-12">
           <ShieldAlert size={52} className="text-brand mx-auto mb-4 opacity-80" />
@@ -264,7 +301,6 @@ export default function Play() {
         </motion.div>
       )}
 
-      {/* ── CREAR PARTIDO ── */}
       {activeTab === 'create' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-dark-card border border-dark-border p-5 rounded-2xl shadow-lg">
           <form onSubmit={handleCreateRoom} className="space-y-5">
@@ -310,7 +346,6 @@ export default function Play() {
               </div>
             </div>
 
-            {/* PRIVACIDAD SELECTOR */}
             <div className="grid grid-cols-2 gap-3">
               {[
                 { value: false, icon: Globe, label: 'Pública', desc: 'Visible en Disponibles' },
@@ -339,13 +374,90 @@ export default function Play() {
           </form>
         </motion.div>
       )}
+
+      {/* MODAL FINISH MATCH */}
+      <AnimatePresence>
+        {finishMatchData && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setFinishMatchData(null)}
+            />
+            <motion.div
+              initial={{ y: 20, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 20, opacity: 0, scale: 0.95 }}
+              className="bg-dark-card border border-dark-border w-full max-w-sm rounded-[2rem] p-6 z-10 shadow-2xl relative flex flex-col"
+            >
+              <button onClick={() => setFinishMatchData(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <X size={20} />
+              </button>
+              
+              <h3 className="text-xl font-black text-white mb-1 flex items-center gap-2">
+                <CheckCircle2 className="text-brand" /> Finalizar Partido
+              </h3>
+              <p className="text-sm text-slate-400 mb-6">{finishMatchData.name}</p>
+
+              <div className="space-y-4 mb-6">
+                <div className="grid grid-cols-[1fr_2fr_1fr] gap-2 items-center text-center">
+                  <span className="text-xs font-bold text-slate-400 uppercase">Eq. 1</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Resultado</span>
+                  <span className="text-xs font-bold text-slate-400 uppercase">Eq. 2</span>
+                </div>
+                
+                {[1, 2, 3].map((setNum, idx) => (
+                  <div key={idx} className="grid grid-cols-[1fr_2fr_1fr] gap-3 items-center">
+                    <input 
+                      type="number" min="0" max="7" 
+                      value={matchScore[idx].t1}
+                      onChange={(e) => {
+                        const newScore = [...matchScore];
+                        newScore[idx].t1 = e.target.value;
+                        setMatchScore(newScore);
+                      }}
+                      className="bg-dark-bg border border-dark-border rounded-lg p-2 text-center text-white font-bold text-lg focus:border-brand focus:outline-none"
+                    />
+                    <span className="text-xs text-slate-500 font-bold uppercase text-center tracking-widest">Set {setNum}</span>
+                    <input 
+                      type="number" min="0" max="7" 
+                      value={matchScore[idx].t2}
+                      onChange={(e) => {
+                        const newScore = [...matchScore];
+                        newScore[idx].t2 = e.target.value;
+                        setMatchScore(newScore);
+                      }}
+                      className="bg-dark-bg border border-dark-border rounded-lg p-2 text-center text-white font-bold text-lg focus:border-brand focus:outline-none"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-3 w-full mt-2">
+                <button
+                  onClick={() => submitFinishMatch(true)}
+                  className="w-full py-3.5 rounded-xl font-black bg-brand text-dark-bg hover:bg-brand-hover shadow-lg transition"
+                >
+                  Guardar y Finalizar
+                </button>
+                <button
+                  onClick={() => submitFinishMatch(false)}
+                  className="w-full py-3.5 rounded-xl font-bold bg-dark-bg border border-dark-border text-slate-400 hover:bg-slate-800 hover:text-white transition"
+                >
+                  Cerrar sin resultado
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 // ── SUBCOMPONENTES ──
 
-function MatchCard({ match, onClick }) {
+function MatchCard({ match, onClick, onFinish, isCreator }) {
   const players = Array.isArray(match?.players) ? match.players : [];
   return (
     <div
@@ -378,7 +490,17 @@ function MatchCard({ match, onClick }) {
             </div>
           ))}
         </div>
-        <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Ver pista →</span>
+        <div className="flex items-center gap-3">
+          {isCreator && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onFinish(match); }}
+              className="text-[10px] bg-brand/20 text-brand px-3 py-1.5 rounded-lg font-bold uppercase hover:bg-brand hover:text-dark-bg transition-colors"
+            >
+              Finalizar
+            </button>
+          )}
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Ver pista →</span>
+        </div>
       </div>
     </div>
   );
