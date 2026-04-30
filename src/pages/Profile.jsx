@@ -2,7 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, ChevronLeft, Calendar as CalendarIcon, Trophy, Target, Edit3, Trash2, Camera, X, Crown } from 'lucide-react';
 import { useState } from 'react';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -28,7 +28,13 @@ export default function Profile() {
   const safeRooms = Array.isArray(rooms) ? rooms : [];
   const historyMatches = safeRooms.filter(r => 
     r.status === 'completed' && Array.isArray(r.players) && r.players.some(p => p.id === currentUser?.id)
-  ).sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+  ).sort((a, b) => {
+    const dateA = a.datetime ? new Date(a.datetime) : new Date(0);
+    const dateB = b.datetime ? new Date(b.datetime) : new Date(0);
+    const validA = isValid(dateA) ? dateA : new Date(0);
+    const validB = isValid(dateB) ? dateB : new Date(0);
+    return validB - validA;
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('smashcor_currentUser'); 
@@ -345,7 +351,7 @@ export default function Profile() {
                           {didIWin ? 'Victoria' : (isDraw ? 'Partido finalizado sin resultado' : 'Derrota')}
                         </p>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          {match?.datetime ? format(new Date(match.datetime), "dd MMM", { locale: es }) : 'Fecha inst.'} • {match?.location || 'Pista'}
+                          {match?.datetime && isValid(new Date(match.datetime)) ? format(new Date(match.datetime), "dd MMM", { locale: es }) : 'Fecha desconocida'} • {match?.location || 'Pista'}
                         </p>
                       </div>
                       <div className="text-right flex flex-col items-end">
