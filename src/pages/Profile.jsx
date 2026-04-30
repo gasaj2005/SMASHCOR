@@ -328,28 +328,28 @@ export default function Profile() {
                 </div>
               ) : (
                 historyMatches.map(match => {
-                  const didIWin = match.scoreData && match.scoreData.winner !== 0 && (
-                    (match.scoreData.winner === 1 && (match.players[0]?.id === currentUser.id || match.players[2]?.id === currentUser.id)) ||
-                    (match.scoreData.winner === 2 && (match.players[1]?.id === currentUser.id || match.players[3]?.id === currentUser.id))
+                  const didIWin = match?.scoreData && match?.scoreData?.winner !== 0 && (
+                    (match?.scoreData?.winner === 1 && (match?.players?.[0]?.id === currentUser?.id || match?.players?.[2]?.id === currentUser?.id)) ||
+                    (match?.scoreData?.winner === 2 && (match?.players?.[1]?.id === currentUser?.id || match?.players?.[3]?.id === currentUser?.id))
                   );
-                  const isDraw = !match.scoreData || match.scoreData.winner === 0;
+                  const isDraw = !match?.scoreData || match?.scoreData?.winner === 0;
 
                   return (
                     <div 
-                      key={match.id} 
+                      key={match?.id} 
                       onClick={() => setSelectedHistoryMatch(match)}
                       className="bg-dark-card border border-dark-border rounded-2xl p-4 flex justify-between items-center shadow-sm cursor-pointer hover:border-brand transition-colors"
                     >
                       <div>
                         <p className={`font-bold text-sm ${didIWin ? 'text-brand' : (isDraw ? 'text-slate-300' : 'text-red-400')}`}>
-                          {didIWin ? 'Victoria' : (isDraw ? 'Amistoso / Sin Result.' : 'Derrota')}
+                          {didIWin ? 'Victoria' : (isDraw ? 'Partido finalizado sin resultado' : 'Derrota')}
                         </p>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          {match.datetime ? format(new Date(match.datetime), "dd MMM", { locale: es }) : 'Fecha inst.'} • {match.location || 'Pista'}
+                          {match?.datetime ? format(new Date(match.datetime), "dd MMM", { locale: es }) : 'Fecha inst.'} • {match?.location || 'Pista'}
                         </p>
                       </div>
                       <div className="text-right flex flex-col items-end">
-                        {match.scoreData && match.scoreData.sets?.length > 0 ? (
+                        {match?.scoreData && Array.isArray(match?.scoreData?.sets) && match.scoreData.sets.length > 0 ? (
                           <div className="flex gap-1">
                             {match.scoreData.sets.map((set, i) => (
                               <span key={i} className="text-xs font-bold bg-dark-bg px-1.5 py-0.5 rounded border border-dark-border text-white">{set}</span>
@@ -409,16 +409,16 @@ function MatchHistoryDetails({ match, onClose, currentUser }) {
   // Posiciones: Team 1 (left) = left-top, left-bottom (o indices 0, 2)
   // Team 2 (right) = right-top, right-bottom (o indices 1, 3)
   const team1 = [
-    players.find(p => p.courtPosition === 'left-top') || players[0],
-    players.find(p => p.courtPosition === 'left-bottom') || players[2],
+    players.find(p => p?.courtPosition === 'left-top') || players[0],
+    players.find(p => p?.courtPosition === 'left-bottom') || players[2],
   ].filter(Boolean);
 
   const team2 = [
-    players.find(p => p.courtPosition === 'right-top') || players[1],
-    players.find(p => p.courtPosition === 'right-bottom') || players[3],
+    players.find(p => p?.courtPosition === 'right-top') || players[1],
+    players.find(p => p?.courtPosition === 'right-bottom') || players[3],
   ].filter(Boolean);
 
-  const scoreData = match.scoreData;
+  const scoreData = match?.scoreData || null;
   const isWinnerT1 = scoreData?.winner === 1;
   const isWinnerT2 = scoreData?.winner === 2;
 
@@ -440,7 +440,7 @@ function MatchHistoryDetails({ match, onClose, currentUser }) {
         </button>
 
         <h3 className="text-xl font-black text-white text-center mb-1">Resultado Final</h3>
-        <p className="text-sm text-brand font-mono font-bold tracking-widest text-center mb-6">{match.name}</p>
+        <p className="text-sm text-brand font-mono font-bold tracking-widest text-center mb-6">{match?.name || 'Partido'}</p>
 
         {/* PISTA AZUL WPT */}
         <div className="relative w-full aspect-[4/3] bg-blue-600 rounded-lg border-4 border-white shadow-inner overflow-hidden flex">
@@ -493,15 +493,12 @@ function MatchHistoryDetails({ match, onClose, currentUser }) {
           </div>
 
           {/* Marcador Central */}
-          {scoreData && scoreData.sets && scoreData.sets.length > 0 && (
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-dark-bg/95 backdrop-blur-md border-2 border-brand px-4 py-2.5 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.8)] z-20 flex gap-2.5">
+          {scoreData && Array.isArray(scoreData?.sets) && scoreData.sets.length > 0 && (
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-dark-bg/95 backdrop-blur-md border-2 border-brand px-4 py-2.5 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.8)] z-20 flex gap-2.5 flex-wrap justify-center max-w-[80%]">
               {scoreData.sets.map((set, i) => {
-                const [s1, s2] = set.split('-');
                 return (
-                  <div key={i} className="flex gap-1 items-center font-black text-lg">
-                    <span className={parseInt(s1) > parseInt(s2) ? 'text-white' : 'text-slate-500'}>{s1}</span>
-                    <span className="text-slate-600 text-sm">-</span>
-                    <span className={parseInt(s2) > parseInt(s1) ? 'text-white' : 'text-slate-500'}>{s2}</span>
+                  <div key={i} className="flex gap-1 items-center font-black text-lg text-white">
+                    {set}
                   </div>
                 )
               })}

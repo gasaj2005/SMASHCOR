@@ -20,7 +20,7 @@ export default function Play() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
   const [finishMatchData, setFinishMatchData] = useState(null);
-  const [matchScore, setMatchScore] = useState([{ t1: '', t2: '' }, { t1: '', t2: '' }, { t1: '', t2: '' }]);
+  const [matchScore, setMatchScore] = useState([{ t1: '', t2: '', tb1: '', tb2: '' }, { t1: '', t2: '', tb1: '', tb2: '' }, { t1: '', t2: '', tb1: '', tb2: '' }]);
 
   const [joinCode, setJoinCode] = useState('');
   const [joinError, setJoinError] = useState('');
@@ -90,7 +90,7 @@ export default function Play() {
 
   const openFinishMatch = (match) => {
     setFinishMatchData(match);
-    setMatchScore([{ t1: '', t2: '' }, { t1: '', t2: '' }, { t1: '', t2: '' }]);
+    setMatchScore([{ t1: '', t2: '', tb1: '', tb2: '' }, { t1: '', t2: '', tb1: '', tb2: '' }, { t1: '', t2: '', tb1: '', tb2: '' }]);
   };
 
   const submitFinishMatch = (withScore) => {
@@ -107,9 +107,25 @@ export default function Play() {
         const t1 = parseInt(set.t1);
         const t2 = parseInt(set.t2);
         if (!isNaN(t1) && !isNaN(t2)) {
-          validSets.push(`${t1}-${t2}`);
-          if (t1 > t2) team1Sets++;
-          else if (t2 > t1) team2Sets++;
+          let setWinner = 0;
+          if (t1 === 6 && t2 === 6) {
+            const tb1 = parseInt(set.tb1);
+            const tb2 = parseInt(set.tb2);
+            if (!isNaN(tb1) && !isNaN(tb2)) {
+              validSets.push(`6-6 (${tb1}-${tb2})`);
+              if (tb1 > tb2) setWinner = 1;
+              else if (tb2 > tb1) setWinner = 2;
+            } else {
+              validSets.push(`6-6`);
+            }
+          } else {
+            validSets.push(`${t1}-${t2}`);
+            if (t1 > t2) setWinner = 1;
+            else if (t2 > t1) setWinner = 2;
+          }
+
+          if (setWinner === 1) team1Sets++;
+          else if (setWinner === 2) team2Sets++;
         }
       });
 
@@ -406,31 +422,63 @@ export default function Play() {
                   <span className="text-xs font-bold text-slate-400 uppercase">Eq. 2</span>
                 </div>
                 
-                {[1, 2, 3].map((setNum, idx) => (
-                  <div key={idx} className="grid grid-cols-[1fr_2fr_1fr] gap-3 items-center">
-                    <input 
-                      type="number" min="0" max="7" 
-                      value={matchScore[idx].t1}
-                      onChange={(e) => {
-                        const newScore = [...matchScore];
-                        newScore[idx].t1 = e.target.value;
-                        setMatchScore(newScore);
-                      }}
-                      className="bg-dark-bg border border-dark-border rounded-lg p-2 text-center text-white font-bold text-lg focus:border-brand focus:outline-none"
-                    />
-                    <span className="text-xs text-slate-500 font-bold uppercase text-center tracking-widest">Set {setNum}</span>
-                    <input 
-                      type="number" min="0" max="7" 
-                      value={matchScore[idx].t2}
-                      onChange={(e) => {
-                        const newScore = [...matchScore];
-                        newScore[idx].t2 = e.target.value;
-                        setMatchScore(newScore);
-                      }}
-                      className="bg-dark-bg border border-dark-border rounded-lg p-2 text-center text-white font-bold text-lg focus:border-brand focus:outline-none"
-                    />
-                  </div>
-                ))}
+                {[1, 2, 3].map((setNum, idx) => {
+                  const isTieBreak = matchScore[idx].t1 === '6' && matchScore[idx].t2 === '6';
+                  return (
+                    <div key={idx} className="flex flex-col gap-2 items-center">
+                      <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center w-full">
+                        <input 
+                          type="number" min="0" max="7" 
+                          value={matchScore[idx].t1}
+                          onChange={(e) => {
+                            const newScore = [...matchScore];
+                            newScore[idx].t1 = e.target.value;
+                            setMatchScore(newScore);
+                          }}
+                          className="bg-dark-bg border border-dark-border rounded-lg p-2 text-center text-white font-bold text-lg focus:border-brand focus:outline-none"
+                        />
+                        <span className="text-xs text-slate-500 font-bold uppercase text-center tracking-widest px-2">Set {setNum}</span>
+                        <input 
+                          type="number" min="0" max="7" 
+                          value={matchScore[idx].t2}
+                          onChange={(e) => {
+                            const newScore = [...matchScore];
+                            newScore[idx].t2 = e.target.value;
+                            setMatchScore(newScore);
+                          }}
+                          className="bg-dark-bg border border-dark-border rounded-lg p-2 text-center text-white font-bold text-lg focus:border-brand focus:outline-none"
+                        />
+                      </div>
+                      
+                      {isTieBreak && (
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="flex gap-2 items-center bg-brand/10 px-3 py-1.5 rounded-lg border border-brand/20 w-auto justify-center mt-1 mb-2">
+                           <span className="text-[10px] font-bold text-brand uppercase mr-1">TB</span>
+                           <input 
+                              type="number" min="0"
+                              value={matchScore[idx].tb1 || ''}
+                              onChange={(e) => {
+                                const newScore = [...matchScore];
+                                newScore[idx].tb1 = e.target.value;
+                                setMatchScore(newScore);
+                              }}
+                              className="bg-dark-bg border border-dark-border rounded p-1 text-center text-brand font-bold text-sm w-12 focus:border-brand focus:outline-none"
+                            />
+                            <span className="text-slate-500 font-bold">-</span>
+                            <input 
+                              type="number" min="0"
+                              value={matchScore[idx].tb2 || ''}
+                              onChange={(e) => {
+                                const newScore = [...matchScore];
+                                newScore[idx].tb2 = e.target.value;
+                                setMatchScore(newScore);
+                              }}
+                              className="bg-dark-bg border border-dark-border rounded p-1 text-center text-brand font-bold text-sm w-12 focus:border-brand focus:outline-none"
+                            />
+                        </motion.div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="flex flex-col gap-3 w-full mt-2">
