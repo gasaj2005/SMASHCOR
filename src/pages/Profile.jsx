@@ -6,6 +6,17 @@ import { format, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const safeFormatDate = (dateVal) => {
+  if (!dateVal) return "Fecha desconocida";
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return "Fecha desconocida";
+    return format(d, "dd MMM", { locale: es }); 
+  } catch (error) {
+    return "Fecha desconocida";
+  }
+};
+
 export default function Profile() {
   const { currentUser, logout, updateProfile, deleteAccount, rooms } = useAuth();
   const navigate = useNavigate();
@@ -351,7 +362,7 @@ export default function Profile() {
                           {didIWin ? 'Victoria' : (isDraw ? 'Partido finalizado sin resultado' : 'Derrota')}
                         </p>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          {match?.datetime && isValid(new Date(match.datetime)) ? format(new Date(match.datetime), "dd MMM", { locale: es }) : 'Fecha desconocida'} • {match?.location || 'Pista'}
+                          {safeFormatDate(match?.datetime)} • {match?.location || 'Pista'}
                         </p>
                       </div>
                       <div className="text-right flex flex-col items-end">
