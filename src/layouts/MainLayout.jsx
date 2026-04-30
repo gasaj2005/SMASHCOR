@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import TopBar from '../components/TopBar';
@@ -7,8 +7,39 @@ import { useAuth } from '../context/AuthContext';
 import Splash from '../pages/Splash';
 
 export default function MainLayout() {
-  const { currentUser, loading, updateProfile } = useAuth();
+  const { currentUser, loading, updateProfile, rooms, addNotification } = useAuth();
   const [bioInput, setBioInput] = useState('');
+
+  // ── Recordatorios de 24h (Anti-Spam) ──
+  useEffect(() => {
+    if (!currentUser || !Array.isArray(rooms) || rooms.length === 0) return;
+
+    const now = new Date();
+    const next24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    // Filtrar partidos donde el usuario está inscrito
+    const myMatches = rooms.filter(r => 
+      Array.isArray(r.players) && r.players.some(p => p.id === currentUser.id)
+    );
+
+    myMatches.forEach(match => {
+      if (match.datetime) {
+        const matchDate = new Date(match.datetime);
+        // Si el partido es en el futuro y dentro de las próximas 24 horas
+        if (matchDate > now && matchDate <= next24Hours) {
+          // Bloqueo Anti-Spam: ¿Ya existe una notificación 'reminder' para este match.id?
+          const hasReminder = currentUser.notifications?.some(
+            n => n.type === 'reminder' && n.relatedId === match.id
+          );
+
+          if (!hasReminder) {
+            const message = `Recordatorio: ¡Tienes un partido en menos de 24 horas en ${match.location || 'tu club'}!`;
+            addNotification(currentUser.id, message, 'reminder', match.id);
+          }
+        }
+      }
+    });
+  }, [currentUser, rooms, addNotification]);
 
   const handleSaveBio = () => {
     updateProfile({ bio: bioInput || '¡Nuevo jugador en SmashCor!', isFirstLogin: false });

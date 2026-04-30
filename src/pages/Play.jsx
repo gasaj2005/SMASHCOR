@@ -14,7 +14,7 @@ const TABS = [
 ];
 
 export default function Play() {
-  const { currentUser, rooms, addRoom, joinRoom, leaveRoom, deleteRoom } = useAuth();
+  const { currentUser, rooms, addRoom, joinRoom, leaveRoom, deleteRoom, addNotification } = useAuth();
 
   const [activeTab, setActiveTab] = useState('my_matches');
   const [selectedRoom, setSelectedRoom] = useState(null);
@@ -66,6 +66,10 @@ export default function Play() {
     } else {
       setSelectedRoom(res.room);
       setJoinCode('');
+      
+      if (res.room.creatorId && res.room.creatorId !== currentUser?.id) {
+        addNotification(res.room.creatorId, `¡${currentUser?.username || 'Un jugador'} se ha unido a tu partido!`, 'success');
+      }
     }
   };
 
@@ -78,6 +82,10 @@ export default function Play() {
       // Leer el room fresco desde rooms (ya actualizado por joinRoom)
       const freshRoom = safeRooms.find(r => r.id === (res.room?.id ?? roomId)) || res.room;
       setSelectedRoom(freshRoom);
+
+      if (freshRoom.creatorId && freshRoom.creatorId !== currentUser?.id) {
+        addNotification(freshRoom.creatorId, `¡${currentUser?.username || 'Un jugador'} se ha unido a tu partido!`, 'success');
+      }
     }
   };
 

@@ -89,7 +89,9 @@ export const AuthProvider = ({ children }) => {
       }
       const newUser = {
         points: 0, racketModel: 'Sin especificar', racketPhoto: '',
-        bio: '¡Nuevo jugador en SmashCor!', ...data,
+        bio: '¡Nuevo jugador en SmashCor!', 
+        notifications: [],
+        ...data,
         id: 'u' + Math.floor(Math.random() * 10000),
         isFirstLogin: true,
       };
@@ -222,11 +224,67 @@ export const AuthProvider = ({ children }) => {
     return { success: true };
   };
 
+  const addNotification = (userId, message, type = 'info', relatedId = null) => {
+    try {
+      const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
+      const userIndex = users.findIndex(u => u.id === userId);
+      if (userIndex === -1) return;
+
+      const newNotif = {
+        id: 'notif_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        message,
+        type,
+        date: new Date().toISOString(),
+        read: false,
+        relatedId
+      };
+
+      const user = users[userIndex];
+      user.notifications = user.notifications ? [newNotif, ...user.notifications] : [newNotif];
+      users[userIndex] = user;
+
+      localStorage.setItem('smashcor_users', JSON.stringify(users));
+
+      if (currentUser?.id === userId) {
+        const updatedUser = { ...currentUser, notifications: user.notifications };
+        setCurrentUser(updatedUser);
+        localStorage.setItem('smashcor_currentUser', JSON.stringify(updatedUser));
+      }
+    } catch (e) {
+      console.error('Error adding notification:', e);
+    }
+  };
+
+  const markNotificationsAsRead = (userId) => {
+    try {
+      const users = JSON.parse(localStorage.getItem('smashcor_users') || '[]');
+      const userIndex = users.findIndex(u => u.id === userId);
+      if (userIndex === -1) return;
+
+      const user = users[userIndex];
+      if (!user.notifications) return;
+
+      user.notifications = user.notifications.map(n => ({ ...n, read: true }));
+      users[userIndex] = user;
+
+      localStorage.setItem('smashcor_users', JSON.stringify(users));
+
+      if (currentUser?.id === userId) {
+        const updatedUser = { ...currentUser, notifications: user.notifications };
+        setCurrentUser(updatedUser);
+        localStorage.setItem('smashcor_currentUser', JSON.stringify(updatedUser));
+      }
+    } catch (e) {
+      console.error('Error marking notifications as read:', e);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       currentUser, login, register, logout, updateProfile, deleteAccount, loading,
       rooms: Array.isArray(rooms) ? rooms : [],
       addRoom, joinRoom, updatePlayerPosition, leaveRoom, deleteRoom,
+      addNotification, markNotificationsAsRead
     }}>
       {children}
     </AuthContext.Provider>
